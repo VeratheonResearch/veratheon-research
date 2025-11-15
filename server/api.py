@@ -20,6 +20,7 @@ load_dotenv()
 from src.flows.research_flow import main_research_flow  # noqa: E402
 from src.lib.supabase_job_tracker import get_job_tracker, JobStatus  # noqa: E402
 from src.lib.alpha_vantage_api import call_alpha_vantage_symbol_search  # noqa: E402
+from src.research.debug.agent_debug import run_agent_debug, AgentDebugRequest, AgentDebugResponse  # noqa: E402
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("LiteLLM").setLevel(logging.WARNING)
@@ -150,17 +151,47 @@ async def check_report_status(symbol: str):
 @app.get("/ticker-search")
 async def search_ticker(query: str = Query(..., description="Search query for ticker symbol or company name")):
     """Search for stock symbols based on keywords.
-    
+
     This endpoint searches for stock symbols and company names that match the provided query.
     It returns a list of matching stocks with relevant information.
     """
     try:
         logger.info(f"Searching for ticker with query: {query}")
         results = call_alpha_vantage_symbol_search(query)
-        
+
         # Return the best matches directly
         return results
-        
+
     except Exception as e:
         logger.exception(f"Error searching for ticker with query: {query}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/agent-debug")
+async def agent_debug(req: AgentDebugRequest) -> AgentDebugResponse:
+    """Debug endpoint for testing OpenAI Agents SDK with AlphaVantage MCP server.
+
+    This endpoint demonstrates MCP (Model Context Protocol) integration by creating
+    an agent that can query AlphaVantage market data using MCP tools.
+
+    Example request:
+    {
+        "symbol": "AAPL",
+        "message": "Get the global quote for this stock"
+    }
+    """
+    try:
+        symbol_upper = req.symbol.upper()
+        logger.info(f"Starting agent debug for symbol={symbol_upper}, message='{req.message}'")
+
+        # Run the debug agent synchronously (blocking)
+        result = await run_agent_debug(symbol=symbol_upper, message=req.message)
+
+        logger.info(f"Agent debug completed for {symbol_upper}")
+        return result
+
+    except ValueError as e:
+        logger.error(f"Configuration error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Configuration error: {str(e)}")
+    except Exception as e:
+        logger.exception(f"Error running agent debug for {req.symbol}")
         raise HTTPException(status_code=500, detail=str(e))
