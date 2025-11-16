@@ -1,6 +1,7 @@
 from src.research.financial_statements.financial_statements_models import FinancialStatementsData, FinancialStatementsAnalysis
 from src.research.financial_statements.financial_statements_agent import financial_statements_analysis_agent
 from agents import Runner, RunResult
+from src.lib.token_logger_hook import TokenLoggerHook
 import json
 import logging
 
@@ -30,7 +31,8 @@ async def financial_statements_analysis_task(
 
     result: RunResult = await Runner.run(
         financial_statements_analysis_agent,
-        input=input_data
+        input=input_data,
+        hooks=TokenLoggerHook(symbol=symbol)
     )
     
     financial_analysis: FinancialStatementsAnalysis = result.final_output

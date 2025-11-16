@@ -1,13 +1,14 @@
 from src.research.historical_earnings.historical_earnings_models import HistoricalEarningsData, HistoricalEarningsAnalysis
 from src.research.historical_earnings.historical_earnings_agent import historical_earnings_analysis_agent
 from agents import Runner, RunResult
+from src.lib.token_logger_hook import TokenLoggerHook
 import json
 import logging
 
 logger = logging.getLogger(__name__)
 
 async def historical_earnings_analysis_task(
-    symbol: str, 
+    symbol: str,
     historical_data: HistoricalEarningsData
 ) -> HistoricalEarningsAnalysis:
     """
@@ -29,11 +30,13 @@ async def historical_earnings_analysis_task(
 
     logger.debug(f"Input data for historical earnings analysis for {symbol}: {input_data}")
 
+    # Use hooks to automatically track token usage
     result: RunResult = await Runner.run(
         historical_earnings_analysis_agent,
-        input=input_data
+        input=input_data,
+        hooks=TokenLoggerHook(symbol=symbol)
     )
-    
+
     historical_analysis: HistoricalEarningsAnalysis = result.final_output
 
     logger.info(f"Historical earnings analysis completed for {symbol}")

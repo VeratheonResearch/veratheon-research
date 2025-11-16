@@ -1,4 +1,5 @@
 from agents import Agent, Runner, RunResult
+from src.lib.token_logger_hook import TokenLoggerHook
 from src.research.common.models.peer_group import PeerGroup
 import openai
 import json
@@ -54,10 +55,14 @@ async def peer_group_agent(symbol: str, financial_statements_analysis: Optional[
     input_data = f"original_symbol: {symbol}"
     if financial_statements_analysis:
         input_data += f", financial_statements_analysis: {financial_statements_analysis}"
-    
-    result: RunResult = await Runner.run(_peer_group_agent, input=input_data)
+
+    result: RunResult = await Runner.run(
+        _peer_group_agent,
+        input=input_data,
+        hooks=TokenLoggerHook(symbol=symbol)
+    )
     peer_group: PeerGroup = result.final_output
-    
+
     return peer_group
 
 

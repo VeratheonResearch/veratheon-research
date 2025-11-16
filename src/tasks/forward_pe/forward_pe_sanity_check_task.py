@@ -2,6 +2,7 @@ import json
 from src.research.forward_pe.forward_pe_models import ForwardPeSanityCheck
 from src.research.forward_pe.forward_pe_sanity_check_agent import forward_pe_sanity_check_agent
 from agents import Runner, RunResult
+from src.lib.token_logger_hook import TokenLoggerHook
 from src.research.forward_pe.forward_pe_models import ForwardPEEarningsSummary
 import logging
 
@@ -20,7 +21,9 @@ async def forward_pe_sanity_check_task(earnings_summary: ForwardPEEarningsSummar
 
     result: RunResult = await Runner.run(
         forward_pe_sanity_check_agent,
-        input=f"Forward PE Summary Data: {earnings_summary}")
+        input=f"Forward PE Summary Data: {earnings_summary}",
+        hooks=TokenLoggerHook(symbol=earnings_summary.symbol)
+    )
     forward_pe_sanity_check: ForwardPeSanityCheck = result.final_output
 
     logger.info(f"Forward PE sanity check completed for {earnings_summary.symbol}")

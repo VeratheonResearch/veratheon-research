@@ -1,6 +1,7 @@
 from src.research.forward_pe.forward_pe_models import ForwardPeValuation
 from src.research.forward_pe.forward_pe_analysis_agent import forward_pe_analysis_agent
 from agents import Runner, RunResult
+from src.lib.token_logger_hook import TokenLoggerHook
 from src.research.forward_pe.forward_pe_models import ForwardPEEarningsSummary
 import json
 import logging
@@ -40,7 +41,9 @@ async def forward_pe_analysis_task(
 
     result: RunResult = await Runner.run(
         forward_pe_analysis_agent,
-        input=input_data)
+        input=input_data,
+        hooks=TokenLoggerHook(symbol=symbol)
+    )
     forward_pe_analysis: ForwardPeValuation = result.final_output
 
     logger.debug(f"Forward PE analysis for {symbol}: {json.dumps(forward_pe_analysis.model_dump(), indent=2)}")

@@ -32,7 +32,7 @@ class TestHistoricalEarningsFetchTask:
 
 
 class TestHistoricalEarningsAnalysisTask:
-    
+
     @patch('src.tasks.historical_earnings.historical_earnings_analysis_task.Runner.run')
     @pytest.mark.anyio
     async def test_historical_earnings_analysis_task_success(self, mock_runner):

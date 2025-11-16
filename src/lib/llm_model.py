@@ -4,7 +4,7 @@ from contextvars import ContextVar
 
 XAI_API_KEY = os.getenv("XAI_API_KEY")
 
-xai_grok_4_fast_reasoning_model = LitellmModel(model="xai/grok-4-fast-reasoning", api_key=XAI_API_KEY)
+xai_grok_4_fast_reasoning_model: LitellmModel = LitellmModel(model="xai/grok-4-fast-reasoning", api_key=XAI_API_KEY)
 
 # Context variable to store the selected model for the current async context
 _model_context: ContextVar[str] = ContextVar("model_context", default="o4_mini")

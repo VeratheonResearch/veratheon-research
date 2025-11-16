@@ -1,5 +1,6 @@
 from src.research.cross_reference.cross_reference_agent import cross_reference_agent
 from agents import Runner, RunResult
+from src.lib.token_logger_hook import TokenLoggerHook
 import json
 import logging
 from typing import List, Any
@@ -31,7 +32,9 @@ async def cross_reference_task(
 
     result: RunResult = await Runner.run(
         cross_reference_agent,
-        input=input_data)
+        input=input_data,
+        hooks=TokenLoggerHook(symbol=symbol)
+    )
     cross_reference: CrossReferencedAnalysisCompletion = result.final_output
 
     logger.debug(f"Cross reference for original analysis: {original_analysis}: {json.dumps(cross_reference.model_dump(), indent=2)}")

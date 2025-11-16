@@ -1,5 +1,6 @@
 import json
 from agents import Runner, RunResult
+from src.lib.token_logger_hook import TokenLoggerHook
 from src.research.comprehensive_report.comprehensive_report_agent import comprehensive_report_agent
 from src.research.comprehensive_report.comprehensive_report_models import ComprehensiveReport
 from typing import Dict, Any
@@ -34,6 +35,7 @@ async def comprehensive_report_task(
     result: RunResult = await Runner.run(
         comprehensive_report_agent,
         input=input_data,
+        hooks=TokenLoggerHook(symbol=symbol)
     )
     comprehensive_report: ComprehensiveReport = result.final_output
 

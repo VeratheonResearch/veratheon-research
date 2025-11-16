@@ -1,6 +1,7 @@
 import json
 from src.research.forward_pe.forward_pe_models import ForwardPeValuation
 from agents import Runner, RunResult
+from src.lib.token_logger_hook import TokenLoggerHook
 from src.research.trade_ideas.trade_idea_agent import trade_idea_agent
 from src.research.trade_ideas.trade_idea_models import TradeIdea
 from src.research.news_sentiment.news_sentiment_models import NewsSentimentSummary
@@ -49,6 +50,7 @@ async def trade_ideas_task(
     result: RunResult = await Runner.run(
         trade_idea_agent,
         input=input_data,
+        hooks=TokenLoggerHook(symbol=symbol)
     )
     trade_idea: TradeIdea = result.final_output
 

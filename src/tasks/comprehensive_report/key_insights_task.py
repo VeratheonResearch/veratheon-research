@@ -1,5 +1,6 @@
 import json
 from agents import Runner, RunResult
+from src.lib.token_logger_hook import TokenLoggerHook
 from src.research.comprehensive_report.key_insights_agent import key_insights_agent
 from src.research.comprehensive_report.comprehensive_report_models import KeyInsights, ComprehensiveReport
 import logging
@@ -28,6 +29,7 @@ async def key_insights_task(
     result: RunResult = await Runner.run(
         key_insights_agent,
         input=input_data,
+        hooks=TokenLoggerHook(symbol=symbol)
     )
     key_insights: KeyInsights = result.final_output
 

@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 from src.lib.llm_model import set_model_context
 from src.lib.supabase_logger import log_info
+from src.lib.token_logger_hook import TokenLoggerHook
 from src.flows.subflows.forward_pe_flow import forward_pe_flow, forward_pe_sanity_check_flow
 from src.flows.subflows.trade_ideas_flow import trade_ideas_flow
 from src.flows.subflows.news_sentiment_flow import news_sentiment_flow
@@ -58,6 +59,9 @@ async def main_research_flow(
 
     start_time = time.time()
     logger.info(f"Main research flow started for {symbol} using model {model}")
+
+    # Reset token tracking for this workflow
+    TokenLoggerHook.reset()
 
     # Set the model context for all downstream agents in this async context
     set_model_context(model)
@@ -208,9 +212,31 @@ async def main_research_flow(
 
     duration_seconds = int(time.time() - start_time)
     logger.info(f"Main research for {symbol} completed successfully! in {duration_seconds} seconds")
-    
+
+    # Print token usage summary
+    TokenLoggerHook.print_summary()
+
+    # Log token summary to Supabase
+    token_totals = TokenLoggerHook.get_totals()
+    log_info(
+        component="main_research_flow",
+        message=f"Research flow completed for {symbol}",
+        job_id=job_id,
+        symbol=symbol,
+        metadata={
+            "duration_seconds": duration_seconds,
+            "token_usage": TokenLoggerHook.get_summary_dict(),
+            "total_tokens": token_totals["total_tokens"],
+            "total_input_tokens": token_totals["total_input_tokens"],
+            "total_output_tokens": token_totals["total_output_tokens"],
+            "total_requests": token_totals["total_requests"],
+            "agent_count": token_totals["agent_count"]
+        }
+    )
+
     return {
         "symbol": symbol,
         "comprehensive_report": comprehensive_report.model_dump(),
-        "key_insights": key_insights.model_dump()
+        "key_insights": key_insights.model_dump(),
+        "token_usage": TokenLoggerHook.get_summary_dict()
     }

@@ -1,6 +1,7 @@
 from src.research.earnings_projections.earnings_projections_models import EarningsProjectionData, EarningsProjectionAnalysis
 from src.research.earnings_projections.earnings_projections_agent import earnings_projections_analysis_agent
 from agents import Runner, RunResult
+from src.lib.token_logger_hook import TokenLoggerHook
 import json
 import logging
 
@@ -30,7 +31,8 @@ async def earnings_projections_analysis_task(
 
     result: RunResult = await Runner.run(
         earnings_projections_analysis_agent,
-        input=input_data
+        input=input_data,
+        hooks=TokenLoggerHook(symbol=symbol)
     )
     
     projections_analysis: EarningsProjectionAnalysis = result.final_output

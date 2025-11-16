@@ -166,25 +166,24 @@ async def search_ticker(query: str = Query(..., description="Search query for ti
         logger.exception(f"Error searching for ticker with query: {query}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/agent-debug")
-async def agent_debug(req: AgentDebugRequest) -> AgentDebugResponse:
+@app.get("/agent-debug")
+async def agent_debug() -> AgentDebugResponse:
     """Debug endpoint for testing OpenAI Agents SDK with AlphaVantage MCP server.
 
     This endpoint demonstrates MCP (Model Context Protocol) integration by creating
     an agent that can query AlphaVantage market data using MCP tools.
 
-    Example request:
-    {
-        "symbol": "AAPL",
-        "message": "Get the global quote for this stock"
-    }
+    Hardcoded to test with AAPL stock quote. Simply visit http://localhost:8085/agent-debug
     """
     try:
-        symbol_upper = req.symbol.upper()
-        logger.info(f"Starting agent debug for symbol={symbol_upper}, message='{req.message}'")
+        # Hardcoded parameters for easy browser testing
+        symbol = "AAPL"
 
-        # Run the debug agent synchronously (blocking)
-        result = await run_agent_debug(symbol=symbol_upper, message=req.message)
+        symbol_upper = symbol.upper()
+        logger.info(f"Starting agent debug for symbol={symbol_upper}")
+
+        # Run the debug agent
+        result = await run_agent_debug(symbol=symbol_upper)
 
         logger.info(f"Agent debug completed for {symbol_upper}")
         return result
@@ -193,5 +192,5 @@ async def agent_debug(req: AgentDebugRequest) -> AgentDebugResponse:
         logger.error(f"Configuration error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Configuration error: {str(e)}")
     except Exception as e:
-        logger.exception(f"Error running agent debug for {req.symbol}")
+        logger.exception(f"Error running agent debug for {symbol}")
         raise HTTPException(status_code=500, detail=str(e))

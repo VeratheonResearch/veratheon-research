@@ -1,6 +1,7 @@
 from src.research.news_sentiment.news_sentiment_agent import news_sentiment_agent
 from src.research.news_sentiment.news_sentiment_models import RawNewsSentimentSummary, NewsSentimentSummary
 from agents import Runner
+from src.lib.token_logger_hook import TokenLoggerHook
 from typing import List, Optional, Any
 import json
 import logging
@@ -21,7 +22,7 @@ async def news_sentiment_analysis_task(
     if management_guidance_analysis:
         input_data += f", management_guidance_analysis: {management_guidance_analysis}"
     
-    result = await Runner.run(news_sentiment_agent, input=input_data)
+    result = await Runner.run(news_sentiment_agent, input=input_data, hooks=TokenLoggerHook(symbol=symbol))
     logger.info(f"News sentiment analysis completed for {symbol}")
     logger.debug(f"News sentiment analysis for {symbol}: {json.dumps(result.final_output.model_dump(), indent=2)}")
     return result.final_output

@@ -14,6 +14,7 @@ from pydantic import BaseModel
 from agents import Agent, Runner, RunResult
 from agents.mcp import MCPServerStreamableHttp
 from src.lib.llm_model import get_model
+from src.lib.token_logger_hook import TokenLoggerHook
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +65,7 @@ async def run_agent_debug(symbol: str, message: Optional[str] = None) -> AgentDe
         raise ValueError("ALPHA_VANTAGE_API_KEY environment variable is required")
 
     # Default message if not provided
-    user_message = message or f"Get the global quote for {symbol}"
+    user_message = message or f"{symbol}"
 
     logger.info(f"Starting agent debug for symbol={symbol}, message='{user_message}'")
 
@@ -88,24 +89,30 @@ async def run_agent_debug(symbol: str, message: Optional[str] = None) -> AgentDe
             # Create agent with MCP server tools
             agent = Agent(
                 name="Debug Agent",
-                model=get_model(),
+                model=get_model("xai_grok_4_fast_reasoning"),
                 mcp_servers=[server],
                 instructions=f"""You are a financial data assistant with access to AlphaVantage market data tools.
 
-Your task is to help users retrieve stock market data using the available MCP tools.
+                Your task is to help users retrieve stock market data using the available MCP tools.
 
-When asked about a stock quote or price:
-1. Use the GLOBAL_QUOTE tool to get current price information
-2. Present the data in a clear, readable format
-3. Include key metrics like price, change, volume
+                Gather a high level summary of the balance sheet, income statement, and the global quote.
 
-Stock symbol: {symbol}
-""",
+                Return a json object with the following keys:
+                - balance_sheet_summary
+                - income_statement_summary
+                - global_quote_summary
+
+                Stock symbol: {symbol}
+                """,
             )
 
             # Run the agent
             logger.info(f"Running agent with message: {user_message}")
-            result: RunResult = await Runner.run(agent, input=user_message)
+            result: RunResult = await Runner.run(
+                agent,
+                input=user_message,
+                hooks=TokenLoggerHook(symbol=symbol)
+            )
 
             # Extract tool calls from result
             tool_calls = []
@@ -122,7 +129,7 @@ Stock symbol: {symbol}
             execution_time = time.time() - start_time
 
             # Get model name
-            model_name = str(get_model())
+            model_name = str(get_model("xai_grok_4_fast_reasoning"))
 
             logger.info(f"Agent debug completed in {execution_time:.2f}s, tools used: {len(tool_calls)}")
 

@@ -4,6 +4,7 @@ import logging
 from typing import Dict, Any, Optional
 from agents import Agent, Runner, RunResult
 from src.lib.llm_model import get_model
+from src.lib.token_logger_hook import TokenLoggerHook
 from src.research.management_guidance.management_guidance_models import ManagementGuidanceData, ManagementGuidanceAnalysis, GuidanceTone, GuidanceConfidence, ConsensusValidationSignal
 
 log = logging.getLogger(__name__)
@@ -83,7 +84,8 @@ async def management_guidance_agent(
         # Use the Agent SDK to analyze guidance
         result: RunResult = await Runner.run(
             management_guidance_analysis_agent,
-            input=input_data
+            input=input_data,
+            hooks=TokenLoggerHook(symbol=symbol)
         )
         analysis_result: ManagementGuidanceAnalysis = result.final_output
         
