@@ -15,6 +15,7 @@ from typing import Optional, Union
 from src.agents.quantitative_agent import run_quantitative_analysis
 from src.agents.qualitative_agent import run_qualitative_analysis
 from src.agents.macro_report import fetch_macro_report as fetch_macro_data, MacroReport
+from src.agents.synthesis_agent import run_synthesis_agent as run_synthesis
 from src.lib.clients.alpha_vantage_client import AlphaVantageClient
 
 
@@ -80,14 +81,26 @@ async def run_synthesis_agent(
     symbol: str,
     quantitative: str,
     qualitative: str,
-    macro: dict
+    macro: Union[MacroReport, dict]
 ) -> str:
     """
     Run the synthesis agent to combine all reports.
 
-    TODO: Implement in Phase 1.5
+    Args:
+        symbol: Stock ticker symbol
+        quantitative: Quantitative analysis report
+        qualitative: Qualitative analysis report
+        macro: Macro economic report (MacroReport or dict)
+
+    Returns:
+        Synthesized research report
     """
-    return f"[Synthesis report for {symbol} - not yet implemented]"
+    return await run_synthesis(
+        symbol=symbol,
+        quantitative_report=quantitative,
+        qualitative_report=qualitative,
+        macro_report=macro,
+    )
 
 
 async def run_autonomous_workflow(symbol: str) -> WorkflowResult:
