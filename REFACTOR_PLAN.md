@@ -13,6 +13,7 @@
 
 You are permitted to make changes to this plan as needed, but if you do, please add a comment explaining the change, and why. You are strictly not allowed to change the Vision Statement section.
 
+You must complete each task, one at a time, and stop for me to confirm the results. Do not move on to the next task until I have confirmed the current task is complete.
 ---
 
 ## Vision Statement
@@ -251,25 +252,36 @@ src/
 
 ---
 
+## Implementation Notes
+
+**This is a first draft rough refactor.** Don't worry too much about perfect deliverables or extensive documentation. Focus on getting things working. Comments in the task list are optional and only needed for changes that require more consideration or context for future sessions.
+
+For "review" tasks, a small summary of findings is expected (can be verbal or in comments).
+
+---
+
 ## Implementation Phases
 
 ### Phase 1: Infrastructure (Tools & Clients)
 
 #### 1.1 Extend Model Support
 
+**Model Selection:** Use only these two xAI Grok models:
+- `grok-4-1-fast-reasoning` - **Primary/default.** Use for any task requiring analysis, synthesis, or decision-making.
+- `grok-4-1-fast-non-reasoning` - Use only for simple tasks where reasoning would be wasteful (e.g., pure text extraction, formatting).
+
+**Note:** Grok support already exists in the codebase (API key configured, using a different model). This task is about switching to the models above and ensuring they work correctly.
+
 - [ ] Review existing `src/lib/llm_model.py` implementation
   > **Comments:**
 
-- [ ] Add additional xAI Grok model options (grok-2, grok-2-mini, etc.)
+- [ ] Update to use `grok-4-1-fast-reasoning` as primary model
   > **Comments:**
 
-- [ ] Ensure fallback to OpenAI works correctly
+- [ ] Add `grok-4-1-fast-non-reasoning` option for simple tasks
   > **Comments:**
 
-- [ ] Test model switching between xAI and OpenAI
-  > **Comments:**
-
-- [ ] Document supported models and their use cases
+- [ ] Test model switching works correctly
   > **Comments:**
 
 #### 1.2 Create Web Search Tool
