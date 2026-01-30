@@ -369,17 +369,17 @@ Start with quantitative since we have Alpha Vantage data already working.
 
 #### 1.4 Macro Report (Data Fetch, No LLM)
 
-- [ ] Create `src/agents/macro_report.py`
-  > **Comments:**
+- [x] Create `src/agents/macro_report.py`
+  > **Comments:** Created with MacroReport and EconomicIndicator dataclasses, MacroReportFetcher class with batched API calls to avoid rate limiting. Includes sector ETF mapping for 12+ sectors.
 
-- [ ] Implement basic fetchers using Alpha Vantage economic endpoints
-  > **Comments:**
+- [x] Implement basic fetchers using Alpha Vantage economic endpoints
+  > **Comments:** Implemented fetchers for CPI, INFLATION, UNEMPLOYMENT, NONFARM_PAYROLL, FEDERAL_FUNDS_RATE, TREASURY_YIELD (2y, 10y), REAL_GDP. Uses batched requests with 0.5s delays between batches to avoid Alpha Vantage rate limits.
 
-- [ ] Return structured data (CPI, rates, VIX, etc.)
-  > **Comments:**
+- [x] Return structured data (CPI, rates, VIX, etc.)
+  > **Comments:** Returns MacroReport dataclass with: CPI index, inflation rate, unemployment, non-farm payrolls, fed funds rate, 10-year/2-year treasury yields, real GDP (with annualized growth calculation), VIX (via VIXY ETF), S&P 500 (via SPY), and sector-specific ETF. Includes trend indicators and contextual interpretations (e.g., VIX levels, yield curve inversion detection).
 
-- [ ] Test: Macro data included in workflow output
-  > **Comments:**
+- [x] Test: Macro data included in workflow output
+  > **Comments:** Verified with `uv run python run_autonomous.py AAPL`. Macro report displays correctly with formatted output including all indicators, trends, and context. Workflow gets company sector via OVERVIEW endpoint to fetch relevant sector ETF.
 
 #### 1.5 Synthesis Agent
 
@@ -498,4 +498,4 @@ X_BEARER_TOKEN=your_x_bearer_token
 
 ---
 
-*Last Updated: 2026-01-30 (Phase 1.3 complete)*
+*Last Updated: 2026-01-30 (Phase 1.4 complete)*

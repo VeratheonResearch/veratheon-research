@@ -10,10 +10,12 @@ Main entry point for the three-pillar research workflow:
 
 import asyncio
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Union
 
 from src.agents.quantitative_agent import run_quantitative_analysis
 from src.agents.qualitative_agent import run_qualitative_analysis
+from src.agents.macro_report import fetch_macro_report as fetch_macro_data, MacroReport
+from src.lib.clients.alpha_vantage_client import AlphaVantageClient
 
 
 @dataclass
@@ -22,7 +24,7 @@ class WorkflowResult:
     symbol: str
     quantitative_report: Optional[str] = None
     qualitative_report: Optional[str] = None
-    macro_report: Optional[dict] = None
+    macro_report: Optional[Union[MacroReport, dict]] = None
     synthesis_report: Optional[str] = None
     trade_advice: Optional[str] = None
     error: Optional[str] = None
@@ -44,17 +46,34 @@ async def run_qualitative_agent(symbol: str) -> str:
     return await run_qualitative_analysis(symbol)
 
 
-async def fetch_macro_report() -> dict:
+async def get_company_sector(symbol: str) -> Optional[str]:
+    """
+    Fetch the company's sector from Alpha Vantage overview.
+    Used to get sector-specific ETF performance in macro report.
+    """
+    try:
+        client = AlphaVantageClient()
+        data = await asyncio.to_thread(
+            client.run_query,
+            f"OVERVIEW&symbol={symbol}"
+        )
+        return data.get("Sector")
+    except Exception:
+        return None
+
+
+async def fetch_macro_report(sector: Optional[str] = None) -> MacroReport:
     """
     Fetch macro economic indicators.
     This is a data lookup, not an LLM call.
 
-    TODO: Implement in Phase 1.4
+    Args:
+        sector: Optional company sector for sector-specific ETF data
+
+    Returns:
+        MacroReport with all economic indicators
     """
-    return {
-        "status": "not_implemented",
-        "message": "Macro report not yet implemented"
-    }
+    return await fetch_macro_data(sector=sector)
 
 
 async def run_synthesis_agent(
@@ -85,11 +104,14 @@ async def run_autonomous_workflow(symbol: str) -> WorkflowResult:
     result = WorkflowResult(symbol=symbol)
 
     try:
+        # First, get the company's sector for macro report (quick API call)
+        sector = await get_company_sector(symbol)
+
         # Phase 1: Run quantitative and qualitative agents in parallel
         # (Macro can also run in parallel since it's just data fetching)
         quant_task = asyncio.create_task(run_quantitative_agent(symbol))
         qual_task = asyncio.create_task(run_qualitative_agent(symbol))
-        macro_task = asyncio.create_task(fetch_macro_report())
+        macro_task = asyncio.create_task(fetch_macro_report(sector=sector))
 
         # Wait for all to complete
         result.quantitative_report = await quant_task
@@ -123,6 +145,14 @@ def format_workflow_result(result: WorkflowResult) -> str:
         lines.append(f"ERROR: {result.error}")
         return "\n".join(lines)
 
+    # Format macro report
+    macro_str = "Not available"
+    if result.macro_report:
+        if isinstance(result.macro_report, MacroReport):
+            macro_str = result.macro_report.format_report()
+        else:
+            macro_str = str(result.macro_report)
+
     lines.extend([
         "QUANTITATIVE ANALYSIS",
         "-" * 40,
@@ -134,7 +164,7 @@ def format_workflow_result(result: WorkflowResult) -> str:
         "",
         "MACRO ECONOMIC CONTEXT",
         "-" * 40,
-        str(result.macro_report) if result.macro_report else "Not available",
+        macro_str,
         "",
         "SYNTHESIS",
         "-" * 40,
