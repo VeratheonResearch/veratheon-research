@@ -10,7 +10,8 @@ from typing import Optional
 from openai import OpenAI
 
 # Environment toggle for web search (expensive operation)
-# Accepts: True, False, true, false, 1, 0
+# Set ENABLE_WEB_SEARCH=True in .env to enable (accepts: True, true, 1)
+# Default: True (enabled)
 _web_search_env = os.getenv("ENABLE_WEB_SEARCH", "True")
 ENABLE_WEB_SEARCH = _web_search_env in ("True", "true", "1")
 
@@ -198,9 +199,9 @@ def _get_disabled_message(symbol: str) -> str:
 
 **Web search is currently disabled.**
 
-To enable web search, set the environment variable:
+To enable web search, set in your `.env` file:
 ```
-ENABLE_WEB_SEARCH=true
+ENABLE_WEB_SEARCH=True
 ```
 
 Note: Web search uses xAI's server-side tools which incur additional API costs.
