@@ -272,17 +272,17 @@ For "review" tasks, a small summary of findings is expected (can be verbal or in
 
 **Note:** Grok support already exists in the codebase (API key configured, using a different model). This task is about switching to the models above and ensuring they work correctly.
 
-- [ ] Review existing `src/lib/llm_model.py` implementation
-  > **Comments:**
+- [x] Review existing `src/lib/llm_model.py` implementation
+  > **Comments:** Current implementation uses `LitellmModel` from agents SDK with `grok-4-fast-reasoning`. Needs update to `grok-4-1-fast-reasoning`. Uses `ContextVar` for async-safe model selection. XAI_API_KEY already configured. Need to add non-reasoning model option.
 
-- [ ] Update to use `grok-4-1-fast-reasoning` as primary model
-  > **Comments:**
+- [x] Update to use `grok-4-1-fast-reasoning` as primary model
+  > **Comments:** Updated model from `grok-4-fast-reasoning` to `grok-4-1-fast-reasoning`. Set as default in context variable. Renamed variable to `xai_grok_4_1_fast_reasoning_model`.
 
-- [ ] Add `grok-4-1-fast-non-reasoning` option for simple tasks
-  > **Comments:**
+- [x] Add `grok-4-1-fast-non-reasoning` option for simple tasks
+  > **Comments:** Added `xai_grok_4_1_fast_non_reasoning_model` for simple tasks like text extraction and formatting. Updated `get_model()` to support both model choices.
 
-- [ ] Test model switching works correctly
-  > **Comments:**
+- [x] Test model switching works correctly
+  > **Comments:** All tests passed: default model selection, explicit model selection for both reasoning and non-reasoning, context switching via `set_model_context()`, and o4_mini fallback.
 
 #### 1.2 Create Web Search Tool
 
