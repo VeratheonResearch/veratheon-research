@@ -12,6 +12,8 @@ import asyncio
 from dataclasses import dataclass
 from typing import Optional
 
+from src.agents.quantitative_agent import run_quantitative_analysis
+
 
 @dataclass
 class WorkflowResult:
@@ -29,10 +31,8 @@ async def run_quantitative_agent(symbol: str) -> str:
     """
     Run the quantitative research agent.
     Analyzes financial health using Alpha Vantage data.
-
-    TODO: Implement in Phase 1.2
     """
-    return f"[Quantitative analysis for {symbol} - not yet implemented]"
+    return await run_quantitative_analysis(symbol)
 
 
 async def run_qualitative_agent(symbol: str) -> str:
