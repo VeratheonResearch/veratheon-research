@@ -14,6 +14,9 @@
 You are permitted to make changes to this plan as needed, but if you do, please add a comment explaining the change, and why. You are strictly not allowed to change the Vision Statement section.
 
 You must complete each task, one at a time, and stop for me to confirm the results. Do not move on to the next task until I have confirmed the current task is complete.
+
+**Commit Policy:** Once a section (e.g., Phase 0.1, Phase 1.2) has been successfully verified as complete, stage and commit your changes with a descriptive commit message summarizing what was implemented in that section.
+
 ---
 
 ## Vision Statement
