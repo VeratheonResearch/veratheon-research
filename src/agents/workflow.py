@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from src.agents.quantitative_agent import run_quantitative_analysis
+from src.agents.qualitative_agent import run_qualitative_analysis
 
 
 @dataclass
@@ -38,11 +39,9 @@ async def run_quantitative_agent(symbol: str) -> str:
 async def run_qualitative_agent(symbol: str) -> str:
     """
     Run the qualitative research agent.
-    Researches news and sentiment via web search.
-
-    TODO: Implement in Phase 1.3
+    Researches news and sentiment via xAI web search and X search.
     """
-    return f"[Qualitative analysis for {symbol} - not yet implemented]"
+    return await run_qualitative_analysis(symbol)
 
 
 async def fetch_macro_report() -> dict:

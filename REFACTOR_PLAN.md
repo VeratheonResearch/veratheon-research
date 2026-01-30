@@ -349,20 +349,23 @@ Start with quantitative since we have Alpha Vantage data already working.
 
 #### 1.3 Qualitative Agent (Second Agent)
 
-- [ ] Research web search options (xAI Live Search, Tavily, etc.)
-  > **Comments:**
+- [x] Research web search options (xAI Live Search, xAI X Search)
+  > **Comments:** xAI provides server-side `web_search` and `x_search` tools via the `/v1/responses` endpoint. Use OpenAI SDK with `base_url="https://api.x.ai/v1"` and `client.responses.create()`. Model `grok-4-1-fast` is optimized for search tasks. Tools passed as `[{"type": "web_search"}, {"type": "x_search"}]`.
 
-- [ ] Add web search capability (simplest option first)
-  > **Comments:**
+- [x] Add web search capability (simplest option first)
+  > **Comments:** Used xAI's native server-side tools via OpenAI SDK with xAI base URL. Created `get_xai_client()` function for lazy initialization.
 
-- [ ] Create `src/agents/qualitative_agent.py`
-  > **Comments:**
+- [x] Create `src/agents/qualitative_agent.py`
+  > **Comments:** Created with xAI web_search and x_search integration. Uses `/v1/responses` endpoint directly since these are server-side tools (different from function tools). Includes error handling for auth, rate limits, and API failures.
 
-- [ ] Write basic prompt: "Research what's happening with {symbol}"
-  > **Comments:**
+- [x] Write basic prompt: "Research what's happening with {symbol}"
+  > **Comments:** Wrote comprehensive QUALITATIVE_AGENT_INSTRUCTIONS with structured output format: Executive Summary, Recent Developments, Market Sentiment, Upcoming Catalysts, Key Risks, Notable Social/X Posts.
 
-- [ ] Test: Run workflow, verify agent searches web and produces output
-  > **Comments:**
+- [x] Add .env toggle to disable web search because its expensive
+  > **Comments:** Added `ENABLE_WEB_SEARCH` environment variable (default: true). When false, returns informative message explaining how to enable and that it incurs additional API costs.
+
+- [x] Test: Run workflow, verify agent searches web and produces output
+  > **Comments:** Verified working with `uv run python run_autonomous.py AAPL`. Agent successfully uses web_search and x_search tools, produces detailed qualitative analysis with inline citations, recent news (Q1 FY2026 earnings), analyst upgrades, and X posts.
 
 #### 1.4 Macro Report (Data Fetch, No LLM)
 
@@ -495,4 +498,4 @@ X_BEARER_TOKEN=your_x_bearer_token
 
 ---
 
-*Last Updated: 2026-01-30 (Phase 1.2 complete)*
+*Last Updated: 2026-01-30 (Phase 1.3 complete)*
