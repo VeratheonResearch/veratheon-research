@@ -316,17 +316,17 @@ Move existing code to `legacy/` directory for reference. Keep `src/lib/` as it h
 
 #### 1.1 Create Basic Workflow Structure
 
-- [ ] Create `src/agents/` directory structure
-  > **Comments:**
+- [x] Create `src/agents/` directory structure
+  > **Comments:** Created `src/agents/` with `__init__.py`.
 
-- [ ] Create `src/agents/workflow.py` - Main entry point
-  > **Comments:**
+- [x] Create `src/agents/workflow.py` - Main entry point
+  > **Comments:** Created with `WorkflowResult` dataclass, stub functions for all agents (quantitative, qualitative, macro, synthesis), and `run_autonomous_workflow()` that runs agents in parallel using `asyncio.create_task()`.
 
-- [ ] Create `run_autonomous.py` - CLI runner script
-  > **Comments:**
+- [x] Create `run_autonomous.py` - CLI runner script
+  > **Comments:** Created with argparse for CLI args, supports `uv run python run_autonomous.py AAPL` syntax, includes `-v` verbose flag.
 
-- [ ] Test: Can run `uv run python run_autonomous.py AAPL` (even if output is minimal)
-  > **Comments:**
+- [x] Test: Can run `uv run python run_autonomous.py AAPL` (even if output is minimal)
+  > **Comments:** Verified working. Outputs formatted report with placeholder text for each section.
 
 #### 1.2 Quantitative Agent (First Agent)
 
