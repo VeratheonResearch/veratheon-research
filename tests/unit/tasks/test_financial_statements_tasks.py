@@ -1,8 +1,8 @@
 import pytest
 from unittest.mock import patch
-from src.tasks.financial_statements.financial_statements_fetch_task import financial_statements_fetch_task
-from src.tasks.financial_statements.financial_statements_analysis_task import financial_statements_analysis_task
-from src.research.financial_statements.financial_statements_models import (
+from legacy.tasks.financial_statements.financial_statements_fetch_task import financial_statements_fetch_task
+from legacy.tasks.financial_statements.financial_statements_analysis_task import financial_statements_analysis_task
+from legacy.research.financial_statements.financial_statements_models import (
     FinancialStatementsData, 
     FinancialStatementsAnalysis
 )

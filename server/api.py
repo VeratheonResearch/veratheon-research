@@ -17,10 +17,10 @@ if str(project_root) not in sys.path:
 load_dotenv()
 
 # Import after sys.path setup
-from src.flows.research_flow import main_research_flow  # noqa: E402
+from legacy.flows.research_flow import main_research_flow  # noqa: E402
 from src.lib.supabase_job_tracker import get_job_tracker, JobStatus  # noqa: E402
 from src.lib.alpha_vantage_api import call_alpha_vantage_symbol_search  # noqa: E402
-from src.research.debug.agent_debug import run_agent_debug, AgentDebugRequest, AgentDebugResponse  # noqa: E402
+from legacy.research.debug.agent_debug import run_agent_debug, AgentDebugRequest, AgentDebugResponse  # noqa: E402
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("LiteLLM").setLevel(logging.WARNING)

@@ -1,12 +1,12 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from src.research.financial_statements.financial_statements_util import (
+from legacy.research.financial_statements.financial_statements_util import (
     calculate_revenue_driver_metrics,
     calculate_cost_structure_metrics,
     calculate_working_capital_metrics,
     get_financial_statements_data_for_symbol
 )
-from src.research.financial_statements.financial_statements_models import FinancialStatementsData
+from legacy.research.financial_statements.financial_statements_models import FinancialStatementsData
 
 
 class TestFinancialStatementsUtil:

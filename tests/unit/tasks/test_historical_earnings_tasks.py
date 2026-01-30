@@ -1,8 +1,8 @@
 import pytest
 from unittest.mock import patch, AsyncMock
-from src.tasks.historical_earnings.historical_earnings_fetch_task import historical_earnings_fetch_task
-from src.tasks.historical_earnings.historical_earnings_analysis_task import historical_earnings_analysis_task
-from src.research.historical_earnings.historical_earnings_models import HistoricalEarningsData, HistoricalEarningsAnalysis
+from legacy.tasks.historical_earnings.historical_earnings_fetch_task import historical_earnings_fetch_task
+from legacy.tasks.historical_earnings.historical_earnings_analysis_task import historical_earnings_analysis_task
+from legacy.research.historical_earnings.historical_earnings_models import HistoricalEarningsData, HistoricalEarningsAnalysis
 from agents import RunResult
 
 

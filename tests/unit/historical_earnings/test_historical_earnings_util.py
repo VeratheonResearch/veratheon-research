@@ -1,12 +1,12 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from src.research.historical_earnings.historical_earnings_util import (
+from legacy.research.historical_earnings.historical_earnings_util import (
     calculate_earnings_beat_miss_pattern,
     calculate_revenue_growth_trend,
     calculate_margin_trend,
     get_historical_earnings_data_for_symbol
 )
-from src.research.historical_earnings.historical_earnings_models import HistoricalEarningsData
+from legacy.research.historical_earnings.historical_earnings_models import HistoricalEarningsData
 
 
 class TestHistoricalEarningsUtil:

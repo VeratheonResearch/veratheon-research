@@ -1,9 +1,9 @@
 import pytest
 from unittest.mock import patch
-from src.tasks.trade_ideas.trade_ideas_task import trade_ideas_task
-from src.research.forward_pe.forward_pe_models import ForwardPeValuation
-from src.research.news_sentiment.news_sentiment_models import NewsSentimentSummary
-from src.research.trade_ideas.trade_idea_models import TradeIdea
+from legacy.tasks.trade_ideas.trade_ideas_task import trade_ideas_task
+from legacy.research.forward_pe.forward_pe_models import ForwardPeValuation
+from legacy.research.news_sentiment.news_sentiment_models import NewsSentimentSummary
+from legacy.research.trade_ideas.trade_idea_models import TradeIdea
 from agents import RunResult
 
 

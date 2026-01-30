@@ -1,19 +1,19 @@
 import pytest
 from unittest.mock import patch, AsyncMock, ANY
-from src.flows.research_flow import main_research_flow
-from src.research.historical_earnings.historical_earnings_models import HistoricalEarningsAnalysis
-from src.research.financial_statements.financial_statements_models import FinancialStatementsAnalysis
-from src.research.earnings_projections.earnings_projections_models import (
+from legacy.flows.research_flow import main_research_flow
+from legacy.research.historical_earnings.historical_earnings_models import HistoricalEarningsAnalysis
+from legacy.research.financial_statements.financial_statements_models import FinancialStatementsAnalysis
+from legacy.research.earnings_projections.earnings_projections_models import (
     EarningsProjectionAnalysis,
     NextQuarterProjection
 )
-from src.research.management_guidance.management_guidance_models import ManagementGuidanceAnalysis
-from src.research.forward_pe.forward_pe_models import ForwardPeValuation, ForwardPeSanityCheck, ForwardPeSanityCheckRealistic
-from src.research.news_sentiment.news_sentiment_models import NewsSentimentSummary
-from src.research.trade_ideas.trade_idea_models import TradeIdea
-from src.research.common.models.peer_group import PeerGroup
-from src.research.cross_reference.cross_reference_models import CrossReferencedAnalysisCompletion, CrossReferencedAnalysis
-from src.research.comprehensive_report.comprehensive_report_models import ComprehensiveReport, KeyInsights
+from legacy.research.management_guidance.management_guidance_models import ManagementGuidanceAnalysis
+from legacy.research.forward_pe.forward_pe_models import ForwardPeValuation, ForwardPeSanityCheck, ForwardPeSanityCheckRealistic
+from legacy.research.news_sentiment.news_sentiment_models import NewsSentimentSummary
+from legacy.research.trade_ideas.trade_idea_models import TradeIdea
+from legacy.research.common.models.peer_group import PeerGroup
+from legacy.research.cross_reference.cross_reference_models import CrossReferencedAnalysisCompletion, CrossReferencedAnalysis
+from legacy.research.comprehensive_report.comprehensive_report_models import ComprehensiveReport, KeyInsights
 
 
 class TestMainResearchFlow:

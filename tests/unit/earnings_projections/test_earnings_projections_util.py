@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from src.research.earnings_projections.earnings_projections_util import (
+from legacy.research.earnings_projections.earnings_projections_util import (
     calculate_revenue_projection_metrics,
     calculate_cost_structure_metrics,
     calculate_profitability_metrics,
@@ -8,7 +8,7 @@ from src.research.earnings_projections.earnings_projections_util import (
     get_consensus_eps_estimate,
     get_earnings_projection_data_for_symbol
 )
-from src.research.earnings_projections.earnings_projections_models import EarningsProjectionData
+from legacy.research.earnings_projections.earnings_projections_models import EarningsProjectionData
 
 
 class TestEarningsProjectionsUtil:

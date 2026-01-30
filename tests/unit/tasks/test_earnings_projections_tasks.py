@@ -1,8 +1,8 @@
 import pytest
 from unittest.mock import patch
-from src.tasks.earnings_projections.earnings_projections_fetch_task import earnings_projections_fetch_task
-from src.tasks.earnings_projections.earnings_projections_analysis_task import earnings_projections_analysis_task
-from src.research.earnings_projections.earnings_projections_models import (
+from legacy.tasks.earnings_projections.earnings_projections_fetch_task import earnings_projections_fetch_task
+from legacy.tasks.earnings_projections.earnings_projections_analysis_task import earnings_projections_analysis_task
+from legacy.research.earnings_projections.earnings_projections_models import (
     EarningsProjectionData, 
     EarningsProjectionAnalysis,
     NextQuarterProjection

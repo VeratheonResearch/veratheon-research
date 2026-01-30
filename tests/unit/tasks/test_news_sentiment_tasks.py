@@ -1,8 +1,8 @@
 import pytest
 from unittest.mock import patch
-from src.tasks.news_sentiment.news_sentiment_fetch_summaries_task import news_sentiment_fetch_summaries_task
-from src.tasks.news_sentiment.news_sentiment_analysis_task import news_sentiment_analysis_task
-from src.research.news_sentiment.news_sentiment_models import (
+from legacy.tasks.news_sentiment.news_sentiment_fetch_summaries_task import news_sentiment_fetch_summaries_task
+from legacy.tasks.news_sentiment.news_sentiment_analysis_task import news_sentiment_analysis_task
+from legacy.research.news_sentiment.news_sentiment_models import (
     RawNewsSentimentSummary, 
     RawNewsSentimentFeed,
     NewsSentimentSummary

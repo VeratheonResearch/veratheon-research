@@ -1,8 +1,8 @@
 import pytest
 from unittest.mock import patch, AsyncMock
-from src.tasks.management_guidance.management_guidance_fetch_task import management_guidance_fetch_task
-from src.tasks.management_guidance.management_guidance_analysis_task import management_guidance_analysis_task
-from src.research.management_guidance.management_guidance_models import (
+from legacy.tasks.management_guidance.management_guidance_fetch_task import management_guidance_fetch_task
+from legacy.tasks.management_guidance.management_guidance_analysis_task import management_guidance_analysis_task
+from legacy.research.management_guidance.management_guidance_models import (
     ManagementGuidanceData, 
     ManagementGuidanceAnalysis
 )

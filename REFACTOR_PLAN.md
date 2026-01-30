@@ -290,23 +290,23 @@ For "review" tasks, a small summary of findings is expected (can be verbal or in
 
 Move existing code to `legacy/` directory for reference. Keep `src/lib/` as it has useful API clients.
 
-- [ ] Create `legacy/` directory
-  > **Comments:**
+- [x] Create `legacy/` directory
+  > **Comments:** Created at `/veratheon-research/legacy/`
 
-- [ ] Move `src/flows/` to `legacy/flows/`
-  > **Comments:**
+- [x] Move `src/flows/` to `legacy/flows/`
+  > **Comments:** Moved successfully.
 
-- [ ] Move `src/research/` to `legacy/research/`
-  > **Comments:**
+- [x] Move `src/research/` to `legacy/research/`
+  > **Comments:** Moved successfully.
 
-- [ ] Move `src/tasks/` to `legacy/tasks/`
-  > **Comments:**
+- [x] Move `src/tasks/` to `legacy/tasks/`
+  > **Comments:** Moved successfully.
 
-- [ ] Verify `src/lib/` remains intact (alpha_vantage_api.py, supabase_*, llm_model.py, etc.)
-  > **Comments:**
+- [x] Verify `src/lib/` remains intact (alpha_vantage_api.py, supabase_*, llm_model.py, etc.)
+  > **Comments:** Verified. All lib files intact: alpha_vantage_agent_tools.py, alpha_vantage_api.py, llm_model.py, supabase_*.py, fiscal_year_utils.py, token_logger_hook.py, clients/.
 
-- [ ] Update any imports if needed (server.py, run.py)
-  > **Comments:**
+- [x] Update any imports if needed (server.py, run.py)
+  > **Comments:** Updated imports in run.py, server/api.py, all legacy/*.py files, and tests/unit/*.py. Used `legacy.flows/research/tasks` instead of `src.flows/research/tasks`. Verified imports work with `uv run python -c "from legacy.flows.research_flow import main_research_flow"`.
 
 ---
 
@@ -485,7 +485,7 @@ X_BEARER_TOKEN=your_x_bearer_token
 ## Completion Checklist
 
 - [x] Phase 0.1: Model support configured
-- [ ] Phase 0.2: Legacy code moved
+- [x] Phase 0.2: Legacy code moved
 - [ ] Phase 1: Minimal working workflow
 - [ ] Phase 2: Enhancements
 - [ ] Phase 3: API integration

@@ -1,23 +1,23 @@
 import pytest
 from unittest.mock import patch, AsyncMock
-from src.flows.subflows.historical_earnings_flow import historical_earnings_flow
-from src.flows.subflows.earnings_projections_flow import earnings_projections_flow
-from src.flows.subflows.financial_statements_flow import financial_statements_flow
-from src.flows.subflows.management_guidance_flow import management_guidance_flow
-from src.research.historical_earnings.historical_earnings_models import (
+from legacy.flows.subflows.historical_earnings_flow import historical_earnings_flow
+from legacy.flows.subflows.earnings_projections_flow import earnings_projections_flow
+from legacy.flows.subflows.financial_statements_flow import financial_statements_flow
+from legacy.flows.subflows.management_guidance_flow import management_guidance_flow
+from legacy.research.historical_earnings.historical_earnings_models import (
     HistoricalEarningsData,
     HistoricalEarningsAnalysis
 )
-from src.research.earnings_projections.earnings_projections_models import (
+from legacy.research.earnings_projections.earnings_projections_models import (
     EarningsProjectionData,
     EarningsProjectionAnalysis,
     NextQuarterProjection
 )
-from src.research.financial_statements.financial_statements_models import (
+from legacy.research.financial_statements.financial_statements_models import (
     FinancialStatementsData,
     FinancialStatementsAnalysis
 )
-from src.research.management_guidance.management_guidance_models import (
+from legacy.research.management_guidance.management_guidance_models import (
     ManagementGuidanceData,
     ManagementGuidanceAnalysis
 )

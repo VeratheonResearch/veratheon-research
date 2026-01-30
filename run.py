@@ -21,7 +21,7 @@ sys.path.append(str(project_root))
 load_dotenv()
 
 # Import the flow after setting up the path
-from src.flows.research_flow import main_research_flow
+from legacy.flows.research_flow import main_research_flow
 
 async def main():
     """Run the market research flow with example parameters."""

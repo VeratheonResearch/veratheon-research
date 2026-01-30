@@ -2,13 +2,13 @@
 
 import pytest
 from unittest.mock import patch, MagicMock
-from src.research.management_guidance.management_guidance_util import (
+from legacy.research.management_guidance.management_guidance_util import (
     get_management_guidance_data_for_symbol,
     extract_latest_earnings_estimate,
     _determine_latest_transcript_quarter,
     _get_previous_quarter
 )
-from src.research.management_guidance.management_guidance_models import ManagementGuidanceData
+from legacy.research.management_guidance.management_guidance_models import ManagementGuidanceData
 
 
 class TestManagementGuidanceUtil:

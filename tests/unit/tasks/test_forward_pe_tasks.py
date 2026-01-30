@@ -1,18 +1,18 @@
 import pytest
 from unittest.mock import patch, AsyncMock
-from src.tasks.forward_pe.forward_pe_fetch_earnings_task import (
+from legacy.tasks.forward_pe.forward_pe_fetch_earnings_task import (
     forward_pe_fetch_earnings_for_symbols_task,
     forward_pe_fetch_single_earnings_task
 )
-from src.tasks.forward_pe.forward_pe_sanity_check_task import forward_pe_sanity_check_task
-from src.tasks.forward_pe.forward_pe_peer_group_task import forward_pe_peer_group_task
-from src.tasks.forward_pe.forward_pe_analysis_task import forward_pe_analysis_task
-from src.research.forward_pe.forward_pe_models import (
+from legacy.tasks.forward_pe.forward_pe_sanity_check_task import forward_pe_sanity_check_task
+from legacy.tasks.forward_pe.forward_pe_peer_group_task import forward_pe_peer_group_task
+from legacy.tasks.forward_pe.forward_pe_analysis_task import forward_pe_analysis_task
+from legacy.research.forward_pe.forward_pe_models import (
     ForwardPEEarningsSummary,
     ForwardPeSanityCheck,
     ForwardPeValuation
 )
-from src.research.common.models.peer_group import PeerGroup
+from legacy.research.common.models.peer_group import PeerGroup
 from agents import RunResult
 
 

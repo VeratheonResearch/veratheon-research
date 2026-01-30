@@ -2,13 +2,13 @@
 
 import pytest
 from unittest.mock import patch, AsyncMock
-from src.research.management_guidance.management_guidance_agent import (
+from legacy.research.management_guidance.management_guidance_agent import (
     management_guidance_agent,
     _extract_transcript_content,
     _create_no_transcript_analysis,
     _create_error_analysis
 )
-from src.research.management_guidance.management_guidance_models import (
+from legacy.research.management_guidance.management_guidance_models import (
     ManagementGuidanceData,
     ManagementGuidanceAnalysis,
     GuidanceIndicator
