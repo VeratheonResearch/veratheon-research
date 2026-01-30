@@ -262,15 +262,17 @@ For "review" tasks, a small summary of findings is expected (can be verbal or in
 
 ## Implementation Phases
 
-### Phase 1: Infrastructure (Tools & Clients)
+**Approach:** Build iteratively with a working workflow. After each phase, we should be able to run the workflow and see results. Add capabilities incrementally.
 
-#### 1.1 Extend Model Support
+---
+
+### Phase 0: Setup & Cleanup
+
+#### 0.1 Model Support (COMPLETED)
 
 **Model Selection:** Use only these two xAI Grok models:
 - `grok-4-1-fast-reasoning` - **Primary/default.** Use for any task requiring analysis, synthesis, or decision-making.
 - `grok-4-1-fast-non-reasoning` - Use only for simple tasks where reasoning would be wasteful (e.g., pure text extraction, formatting).
-
-**Note:** Grok support already exists in the codebase (API key configured, using a different model). This task is about switching to the models above and ensuring they work correctly.
 
 - [x] Review existing `src/lib/llm_model.py` implementation
   > **Comments:** Current implementation uses `LitellmModel` from agents SDK with `grok-4-fast-reasoning`. Needs update to `grok-4-1-fast-reasoning`. Uses `ContextVar` for async-safe model selection. XAI_API_KEY already configured. Need to add non-reasoning model option.
@@ -284,574 +286,173 @@ For "review" tasks, a small summary of findings is expected (can be verbal or in
 - [x] Test model switching works correctly
   > **Comments:** All tests passed: default model selection, explicit model selection for both reasoning and non-reasoning, context switching via `set_model_context()`, and o4_mini fallback.
 
-#### 1.2 Create Web Search Tool
+#### 0.2 Move Legacy Code
 
-- [ ] Create `src/lib/web_search_api.py` - Raw API client
+Move existing code to `legacy/` directory for reference. Keep `src/lib/` as it has useful API clients.
+
+- [ ] Create `legacy/` directory
   > **Comments:**
 
-- [ ] Research and select web search provider (xAI native, Tavily, SerpAPI)
+- [ ] Move `src/flows/` to `legacy/flows/`
   > **Comments:**
 
-- [ ] Implement search function with proper error handling
+- [ ] Move `src/research/` to `legacy/research/`
   > **Comments:**
 
-- [ ] Create `src/tools/web_search.py` with `@function_tool` decorator
+- [ ] Move `src/tasks/` to `legacy/tasks/`
   > **Comments:**
 
-- [ ] Test web search tool independently
+- [ ] Verify `src/lib/` remains intact (alpha_vantage_api.py, supabase_*, llm_model.py, etc.)
   > **Comments:**
 
-#### 1.3 Create X/Twitter Search Tool
-
-- [ ] Create `src/lib/x_api.py` - X API client
-  > **Comments:**
-
-- [ ] Implement X API authentication (OAuth or API key)
-  > **Comments:**
-
-- [ ] Implement search function for recent tweets by ticker/company
-  > **Comments:**
-
-- [ ] Create `src/tools/x_search.py` with `@function_tool` decorator
-  > **Comments:**
-
-- [ ] Test X search tool independently
-  > **Comments:**
-
-#### 1.4 Refactor Alpha Vantage as Tools
-
-- [ ] Create `src/tools/__init__.py`
-  > **Comments:**
-
-- [ ] Create `src/tools/alpha_vantage.py`
-  > **Comments:**
-
-- [ ] Convert `get_company_overview` to `@function_tool`
-  > **Comments:**
-
-- [ ] Convert `get_financial_statements` (income, balance, cash flow) to tools
-  > **Comments:**
-
-- [ ] Convert `get_earnings_history` to `@function_tool`
-  > **Comments:**
-
-- [ ] Convert `get_analyst_estimates` to `@function_tool`
-  > **Comments:**
-
-- [ ] Convert `get_stock_quote` to `@function_tool`
-  > **Comments:**
-
-- [ ] Convert `get_news_sentiment` to `@function_tool`
-  > **Comments:**
-
-- [ ] Convert technical indicators (RSI, MACD, Bollinger) to tools
-  > **Comments:**
-
-- [ ] Test all Alpha Vantage tools independently
-  > **Comments:**
-
-#### 1.5 Create Macro Economic Data Tools
-
-- [ ] Research data sources for economic indicators (FRED API, Alpha Vantage economic indicators, etc.)
-  > **Comments:**
-
-- [ ] Create `src/lib/macro_api.py` - Raw API client for economic data
-  > **Comments:**
-
-- [ ] Implement fetchers for inflation data (CPI, PCE)
-  > **Comments:**
-
-- [ ] Implement fetchers for employment data (Non-Farm Payrolls, Unemployment Rate)
-  > **Comments:**
-
-- [ ] Implement fetchers for interest rates (Fed Funds, 10-yr, 2-yr Treasury)
-  > **Comments:**
-
-- [ ] Implement fetchers for GDP data
-  > **Comments:**
-
-- [ ] Implement fetchers for market indicators (VIX, S&P 500, sector ETFs)
-  > **Comments:**
-
-- [ ] Create `src/tools/macro_economic.py` with tool wrappers
-  > **Comments:**
-
-- [ ] Test all macro data fetchers independently
-  > **Comments:**
-
-#### 1.6 (Optional) SEC Filings Tool
-
-- [ ] Research SEC EDGAR API
-  > **Comments:**
-
-- [ ] Create `src/lib/sec_api.py` if proceeding
-  > **Comments:**
-
-- [ ] Create `src/tools/sec_filings.py` with `@function_tool`
-  > **Comments:**
-
-- [ ] Test SEC filings tool
+- [ ] Update any imports if needed (server.py, run.py)
   > **Comments:**
 
 ---
 
-### Phase 2: Output Models
+### Phase 1: Minimal Working Workflow
 
-#### 2.1 Qualitative Models
+**Goal:** Create a simple end-to-end workflow that we can run with `uv run python run_autonomous.py AAPL`. Start minimal, add complexity later.
 
-- [ ] Create `src/agents/__init__.py`
+#### 1.1 Create Basic Workflow Structure
+
+- [ ] Create `src/agents/` directory structure
   > **Comments:**
 
-- [ ] Create `src/agents/qualitative/__init__.py`
+- [ ] Create `src/agents/workflow.py` - Main entry point
   > **Comments:**
 
-- [ ] Create `src/agents/qualitative/models.py`
+- [ ] Create `run_autonomous.py` - CLI runner script
   > **Comments:**
 
-- [ ] Define `Development` model (company developments/news items)
+- [ ] Test: Can run `uv run python run_autonomous.py AAPL` (even if output is minimal)
   > **Comments:**
 
-- [ ] Define `ExternalFactor` model (macro, geopolitical, regulatory)
+#### 1.2 Quantitative Agent (First Agent)
+
+Start with quantitative since we have Alpha Vantage data already working.
+
+- [ ] Create `src/agents/quantitative_agent.py`
   > **Comments:**
 
-- [ ] Define `RiskFactor` model (identified threats)
+- [ ] Give agent access to existing Alpha Vantage tools from `src/lib/alpha_vantage_agent_tools.py`
   > **Comments:**
 
-- [ ] Define `OpportunityFactor` model (identified tailwinds)
+- [ ] Write basic prompt: "Analyze the financial health of {symbol}"
   > **Comments:**
 
-- [ ] Define `SentimentAnalysis` model (social/media mood)
+- [ ] Test: Run workflow, verify agent calls AV tools and produces output
   > **Comments:**
 
-- [ ] Define `CompanySituationSummary` model
+#### 1.3 Qualitative Agent (Second Agent)
+
+- [ ] Research web search options (xAI Live Search, Tavily, etc.)
   > **Comments:**
 
-- [ ] Define `QualitativeReport` model (top-level output)
+- [ ] Add web search capability (simplest option first)
   > **Comments:**
 
-#### 2.2 Quantitative Models
-
-- [ ] Create `src/agents/quantitative/__init__.py`
+- [ ] Create `src/agents/qualitative_agent.py`
   > **Comments:**
 
-- [ ] Create `src/agents/quantitative/models.py`
+- [ ] Write basic prompt: "Research what's happening with {symbol}"
   > **Comments:**
 
-- [ ] Define `ValuationAnalysis` model (P/E, P/B, EV/EBITDA, etc.)
+- [ ] Test: Run workflow, verify agent searches web and produces output
   > **Comments:**
 
-- [ ] Define `GrowthAnalysis` model (revenue, earnings trends)
+#### 1.4 Macro Report (Data Fetch, No LLM)
+
+- [ ] Create `src/agents/macro_report.py`
   > **Comments:**
 
-- [ ] Define `ProfitabilityAnalysis` model (margins, ROE, ROIC)
+- [ ] Implement basic fetchers using Alpha Vantage economic endpoints
   > **Comments:**
 
-- [ ] Define `BalanceSheetHealth` model (debt, liquidity, solvency)
+- [ ] Return structured data (CPI, rates, VIX, etc.)
   > **Comments:**
 
-- [ ] Define `CashFlowAnalysis` model (FCF, capex, dividends)
+- [ ] Test: Macro data included in workflow output
   > **Comments:**
 
-- [ ] Define `TechnicalAnalysis` model (price action, momentum)
+#### 1.5 Synthesis Agent
+
+- [ ] Create `src/agents/synthesis_agent.py`
   > **Comments:**
 
-- [ ] Define `PeerComparison` model (relative positioning)
+- [ ] Takes outputs from quant + qual + macro
   > **Comments:**
 
-- [ ] Define `HealthRating` enum (STRONG/GOOD/FAIR/WEAK/CRITICAL)
+- [ ] Produces unified research report
   > **Comments:**
 
-- [ ] Define `QuantitativeReport` model (top-level output)
-  > **Comments:**
-
-#### 2.3 Macro Economic Models
-
-- [ ] Create `src/agents/macro/__init__.py`
-  > **Comments:**
-
-- [ ] Create `src/agents/macro/models.py`
-  > **Comments:**
-
-- [ ] Define `InflationData` model (CPI, PCE with values and trends)
-  > **Comments:**
-
-- [ ] Define `EmploymentData` model (payrolls, unemployment rate)
-  > **Comments:**
-
-- [ ] Define `InterestRateData` model (Fed funds, 10-yr, 2-yr, yield curve status)
-  > **Comments:**
-
-- [ ] Define `GrowthData` model (GDP, quarter-over-quarter)
-  > **Comments:**
-
-- [ ] Define `MarketData` model (VIX, S&P 500 trend, sector performance)
-  > **Comments:**
-
-- [ ] Define `MacroEnvironment` enum (RISK_ON/RISK_OFF/NEUTRAL/UNCERTAIN)
-  > **Comments:**
-
-- [ ] Define `MacroReport` model (top-level output with all indicators)
-  > **Comments:**
-
-#### 2.4 Synthesis Models
-
-- [ ] Create `src/agents/synthesis/__init__.py`
-  > **Comments:**
-
-- [ ] Create `src/agents/synthesis/models.py`
-  > **Comments:**
-
-- [ ] Define `DetailedReport` model
-  > **Comments:**
-
-- [ ] Define `SummaryReport` model
-  > **Comments:**
-
-- [ ] Define `Recommendation` enum (BUY/SELL/HOLD/AVOID)
-  > **Comments:**
-
-- [ ] Define `ConvictionLevel` enum (HIGH/MEDIUM/LOW)
-  > **Comments:**
-
-- [ ] Define `TimeHorizon` enum (SHORT/MEDIUM/LONG_TERM)
-  > **Comments:**
-
-- [ ] Define `TradeAdvice` model
-  > **Comments:**
-
-- [ ] Define `ResearchOutput` model (complete output package)
+- [ ] Test: Full workflow produces complete report
   > **Comments:**
 
 ---
 
-### Phase 3: Agents
+### Phase 2: Enhance & Polish
 
-#### 3.1 Qualitative Research Agent
+#### 2.1 Add Trade Advice
 
-- [ ] Create `src/agents/qualitative/prompts.py` with detailed instructions
+- [ ] Create trade advice agent or add to synthesis
   > **Comments:**
 
-- [ ] Create `src/agents/qualitative/agent.py`
+- [ ] Include buy/sell/hold recommendation with reasoning
   > **Comments:**
 
-- [ ] Define agent with tools: web_search, x_search, news_sentiment
+#### 2.2 Add X/Twitter Search (if valuable)
+
+- [ ] Evaluate if X search adds value
   > **Comments:**
 
-- [ ] Configure agent for autonomous tool selection
+- [ ] Implement if worthwhile
   > **Comments:**
 
-- [ ] Ensure agent focuses on quarterly context (what happened last quarter, what's expected next quarter)
+#### 2.3 Improve Prompts
+
+- [ ] Tune quantitative agent prompts based on output quality
   > **Comments:**
 
-- [ ] Test qualitative agent with sample ticker
+- [ ] Tune qualitative agent prompts based on output quality
   > **Comments:**
 
-- [ ] Tune prompts based on output quality
+- [ ] Tune synthesis prompts
   > **Comments:**
 
-#### 3.2 Quantitative Research Agent
+#### 2.4 Add Caching
 
-- [ ] Create `src/agents/quantitative/prompts.py` with detailed instructions
+- [ ] Cache quantitative data (longer TTL)
   > **Comments:**
 
-- [ ] Create `src/agents/quantitative/agent.py`
+- [ ] Cache qualitative data (shorter TTL - news changes)
   > **Comments:**
 
-- [ ] Define agent with tools: all Alpha Vantage tools
-  > **Comments:**
-
-- [ ] Configure agent for autonomous tool selection
-  > **Comments:**
-
-- [ ] Ensure agent focuses on quarterly earnings (past and next quarter)
-  > **Comments:**
-
-- [ ] Test quantitative agent with sample ticker
-  > **Comments:**
-
-- [ ] Tune prompts based on output quality
-  > **Comments:**
-
-#### 3.3 Macro Economic Report Generator
-
-Note: This is NOT an LLM agent - it's a checklist-driven data fetcher that compiles economic indicators into a structured report.
-
-- [ ] Create `src/agents/macro/macro_report.py`
-  > **Comments:**
-
-- [ ] Implement `fetch_inflation_data()` function
-  > **Comments:**
-
-- [ ] Implement `fetch_employment_data()` function
-  > **Comments:**
-
-- [ ] Implement `fetch_interest_rate_data()` function
-  > **Comments:**
-
-- [ ] Implement `fetch_growth_data()` function
-  > **Comments:**
-
-- [ ] Implement `fetch_market_data()` function (VIX, indices, sector)
-  > **Comments:**
-
-- [ ] Implement `determine_macro_environment()` logic (rule-based classification)
-  > **Comments:**
-
-- [ ] Implement main `generate_macro_report()` function that compiles all data
-  > **Comments:**
-
-- [ ] Add brief contextual notes for each indicator (e.g., "above/below Fed target")
-  > **Comments:**
-
-- [ ] Test macro report generation independently
-  > **Comments:**
-
-#### 3.4 Detailed Report Agent
-
-- [ ] Create `src/agents/synthesis/detailed_report_agent.py`
-  > **Comments:**
-
-- [ ] Define agent (no tools, synthesis only)
-  > **Comments:**
-
-- [ ] Write comprehensive prompt for combining qual + quant + macro
-  > **Comments:**
-
-- [ ] Ensure prompt emphasizes quarterly earnings focus (past quarter results, next quarter expectations)
-  > **Comments:**
-
-- [ ] Test with sample qualitative, quantitative, and macro reports
-  > **Comments:**
-
-- [ ] Tune prompts for narrative quality
-  > **Comments:**
-
-#### 3.5 Summary Report Agent
-
-- [ ] Create `src/agents/synthesis/summary_report_agent.py`
-  > **Comments:**
-
-- [ ] Define agent (no tools, condensation only)
-  > **Comments:**
-
-- [ ] Write prompt for extracting key points
-  > **Comments:**
-
-- [ ] Test with sample detailed report
-  > **Comments:**
-
-- [ ] Tune for appropriate length (~500 words)
-  > **Comments:**
-
-#### 3.6 Trade Advice Agent
-
-- [ ] Create `src/agents/synthesis/trade_advice_agent.py`
-  > **Comments:**
-
-- [ ] Define agent (no tools, recommendation only)
-  > **Comments:**
-
-- [ ] Write prompt for actionable recommendations
-  > **Comments:**
-
-- [ ] Include guidance on conviction levels and position sizing
-  > **Comments:**
-
-- [ ] Ensure agent considers macro environment in recommendations
-  > **Comments:**
-
-- [ ] Test with sample reports
-  > **Comments:**
-
-- [ ] Tune for balanced, non-financial-advice recommendations
+- [ ] Cache macro data (medium TTL)
   > **Comments:**
 
 ---
 
-### Phase 4: Orchestration Flow
+### Phase 3: API Integration
 
-#### 4.1 Create Autonomous Research Flow
+#### 3.1 API Endpoint
 
-- [ ] Create `src/flows/autonomous_flow.py`
+- [ ] Add `POST /research/autonomous` endpoint
   > **Comments:**
 
-- [ ] Implement `run_qualitative_agent()` helper
+- [ ] Wire up job tracking
   > **Comments:**
 
-- [ ] Implement `run_quantitative_agent()` helper
+- [ ] Test via curl/Postman
   > **Comments:**
 
-- [ ] Implement `generate_macro_report()` helper (calls the checklist fetcher)
+#### 3.2 Cleanup
+
+- [ ] Delete `legacy/` directory once confirmed not needed
   > **Comments:**
-
-- [ ] Implement `run_detailed_report_agent()` helper
-  > **Comments:**
-
-- [ ] Implement `run_summary_report_agent()` helper
-  > **Comments:**
-
-- [ ] Implement `run_trade_advice_agent()` helper
-  > **Comments:**
-
-- [ ] Implement main `autonomous_research()` function
-  > **Comments:**
-
-- [ ] Add job status updates at each phase
-  > **Comments:**
-
-- [ ] Add error handling and graceful degradation
-  > **Comments:**
-
-- [ ] Test full flow end-to-end
-  > **Comments:**
-
-#### 4.2 Parallel Execution (Optional Enhancement)
-
-- [ ] Evaluate running qualitative + quantitative + macro in parallel
-  > **Comments:**
-
-- [ ] Implement parallel execution if beneficial (all three pillars can run independently)
-  > **Comments:**
-
-- [ ] Test parallel vs sequential performance
-  > **Comments:**
-
----
-
-### Phase 5: API & Integration
-
-#### 5.1 New API Endpoint
-
-- [ ] Add `POST /research/autonomous` endpoint in `server/api.py`
-  > **Comments:**
-
-- [ ] Define request model (symbol, optional parameters)
-  > **Comments:**
-
-- [ ] Define response model (complete ResearchOutput)
-  > **Comments:**
-
-- [ ] Implement endpoint handler
-  > **Comments:**
-
-- [ ] Add appropriate timeouts for long-running research
-  > **Comments:**
-
-- [ ] Test endpoint via curl/Postman
-  > **Comments:**
-
-#### 5.2 Job Tracking Updates
-
-- [ ] Update job status schema if needed for new phases
-  > **Comments:**
-
-- [ ] Implement status updates: "qualitative_research", "quantitative_research", "macro_report", "synthesizing", etc.
-  > **Comments:**
-
-- [ ] Test real-time status updates via Supabase Realtime
-  > **Comments:**
-
-#### 5.3 Caching Strategy
-
-- [ ] Determine caching strategy for autonomous flow
-  > **Comments:**
-
-- [ ] Implement caching for qualitative report (with appropriate TTL)
-  > **Comments:**
-
-- [ ] Implement caching for quantitative report (with appropriate TTL)
-  > **Comments:**
-
-- [ ] Implement caching for macro report (shorter TTL - economic data changes frequently)
-  > **Comments:**
-
-- [ ] Consider cache invalidation triggers (e.g., new earnings release, Fed announcement)
-  > **Comments:**
-
----
-
-### Phase 6: Testing & Validation
-
-#### 6.1 Unit Tests
-
-- [ ] Write tests for all new Pydantic models
-  > **Comments:**
-
-- [ ] Write tests for tool functions
-  > **Comments:**
-
-- [ ] Write tests for agent helpers
-  > **Comments:**
-
-- [ ] Mock external APIs (web search, X, Alpha Vantage, FRED/macro data)
-  > **Comments:**
-
-#### 6.2 Integration Tests
-
-- [ ] Test full autonomous flow with mocked APIs
-  > **Comments:**
-
-- [ ] Test with real APIs on sample tickers
-  > **Comments:**
-
-- [ ] Validate output quality and completeness
-  > **Comments:**
-
-#### 6.3 Quality Validation
-
-- [ ] Test with 5-10 diverse tickers (tech, finance, energy, etc.)
-  > **Comments:**
-
-- [ ] Review output quality with human evaluation
-  > **Comments:**
-
-- [ ] Tune prompts based on findings
-  > **Comments:**
-
-- [ ] Document any edge cases or limitations
-  > **Comments:**
-
----
-
-### Phase 7: Cleanup & Documentation
-
-#### 7.1 Code Cleanup
-
-- [ ] Remove or archive unused legacy code (if appropriate)
-  > **Comments:**
-
-- [ ] Ensure consistent code style across new modules
-  > **Comments:**
-
-- [ ] Add type hints throughout
-  > **Comments:**
-
-#### 7.2 Documentation
 
 - [ ] Update CLAUDE.md with new architecture
   > **Comments:**
-
-- [ ] Document new API endpoints
-  > **Comments:**
-
-- [ ] Document environment variables for new services (X API, web search, FRED)
-  > **Comments:**
-
-- [ ] Create example usage documentation
-  > **Comments:**
-
----
-
-## What to Keep vs Replace
-
-| Keep | Replace |
-|------|---------|
-| `src/lib/alpha_vantage_api.py` (raw API calls) | Sequential research flow logic |
-| Supabase integration (jobs, cache) | Fixed 12-step pipeline |
-| Job status tracking pattern | Hardcoded analysis order |
-| FastAPI server structure | Existing agent definitions (eventually) |
-| Token logging hooks | Existing Pydantic models (eventually) |
-| `litellm` model abstraction | — |
 
 ---
 
@@ -860,36 +461,16 @@ Note: This is NOT an LLM agent - it's a checklist-driven data fetcher that compi
 Add to `.env`:
 
 ```bash
-# xAI API (Primary)
+# xAI API (Primary) - Already configured
 XAI_API_KEY=your_xai_api_key
 
-# Web Search (choose one)
+# Web Search (choose one based on Phase 1.3 research)
 TAVILY_API_KEY=your_tavily_key  # If using Tavily
-SERP_API_KEY=your_serp_key      # If using SerpAPI
+# OR use xAI Live Search (no additional key needed)
 
-# X/Twitter API
-X_API_KEY=your_x_api_key
-X_API_SECRET=your_x_api_secret
+# X/Twitter API (optional - evaluate in Phase 2.2)
 X_BEARER_TOKEN=your_x_bearer_token
-
-# Macro Economic Data (choose based on implementation)
-FRED_API_KEY=your_fred_api_key  # Federal Reserve Economic Data
 ```
-
----
-
-## Risks & Mitigations
-
-| Risk | Mitigation |
-|------|------------|
-| Agent makes poor research decisions | Detailed instructions, few-shot examples in prompts |
-| Runaway token usage | Max turns limit, token budgets, early stopping |
-| Stale macro economic data | Short cache TTL, include data timestamps in reports |
-| Missing critical analysis | Minimum analysis checklist in agent instructions |
-| Non-deterministic outputs | Caching, temperature=0, structured Pydantic output |
-| Debugging difficulty | Verbose logging of agent decisions and tool calls |
-| API rate limits | Implement rate limiting, caching, graceful degradation |
-| Web search quality varies | Multiple search queries, cross-reference sources |
 
 ---
 
@@ -897,19 +478,17 @@ FRED_API_KEY=your_fred_api_key  # Federal Reserve Economic Data
 
 *Add any major decisions, pivots, or discoveries here as implementation progresses.*
 
--
+- 2026-01-30: Switched to iterative workflow approach. Moving legacy code to `legacy/` directory.
 
 ---
 
 ## Completion Checklist
 
-- [ ] Phase 1: Infrastructure complete
-- [ ] Phase 2: Output models complete
-- [ ] Phase 3: All agents implemented and tested
-- [ ] Phase 4: Orchestration flow working end-to-end
-- [ ] Phase 5: API endpoint live and functional
-- [ ] Phase 6: Testing complete, quality validated
-- [ ] Phase 7: Documentation updated
+- [x] Phase 0.1: Model support configured
+- [ ] Phase 0.2: Legacy code moved
+- [ ] Phase 1: Minimal working workflow
+- [ ] Phase 2: Enhancements
+- [ ] Phase 3: API integration
 
 ---
 
