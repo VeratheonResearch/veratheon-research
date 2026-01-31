@@ -611,37 +611,24 @@ Frontend expects 14 sub-jobs with status tracking. New workflow has 5 agents run
 
 ---
 
-#### 4.4 Frontend Component Updates
+#### 4.4 Frontend Component Updates (COMPLETED)
 
 Rewrite UI components to display new `WorkflowResult` structure. Remove all legacy display logic.
 
-- [ ] Rewrite `ResearchReportDisplay.svelte` for new structure
-  > **Comments:**
-  > Display sections:
-  > - `result.synthesis_report` - Main synthesis (prominent)
-  > - `result.quantitative_report` - Financial analysis
-  > - `result.qualitative_report` - News/sentiment
-  > - `result.macro_report` - Economic context (formatted from MacroReport)
-  > - `result.trade_advice` - Trade ideas (with disclaimer styling)
+- [x] Rewrite `ResearchReportDisplay.svelte` for new structure
+  > **Comments:** Already completed in 4.2. Component now displays all 5 sections (synthesis, trade advice, quantitative, qualitative, macro) with collapsible accordion layout. Each section has appropriate icons and colors.
 
-- [ ] Create tabbed or accordion layout for report sections
-  > **Comments:**
-  > Consider: Synthesis as main view, other sections in tabs/accordion.
-  > Or: All sections visible with clear headers.
+- [x] Create tabbed or accordion layout for report sections
+  > **Comments:** Implemented as collapsible accordion sections. Synthesis is expanded by default. Each section can be toggled independently with expand/collapse arrows.
 
-- [ ] Add trade advice disclaimer styling
-  > **Comments:**
-  > Backend includes disclaimer text. Add visual warning styling (yellow/orange border, icon).
+- [x] Add trade advice disclaimer styling
+  > **Comments:** Trade advice section has warning badge ("Advisory Only"), yellow/orange border (`border-warning/30`), and yellow background (`bg-warning/10`) for visual distinction.
 
-- [ ] Update `+page.svelte` for new data flow
-  > **Comments:**
-  > - Change `researchResult` type from legacy to `WorkflowResult`
-  > - Update progress calculation to use 5 steps
-  > - Remove any legacy field references
+- [x] Update `+page.svelte` for new data flow
+  > **Comments:** Already completed in 4.2. Uses `WorkflowResult` type, `TOTAL_RESEARCH_STEPS = 5`, and all legacy references removed.
 
-- [ ] Remove legacy component code
-  > **Comments:**
-  > Delete any code referencing `comprehensive_report`, `key_insights`, etc.
+- [x] Remove legacy component code
+  > **Comments:** Updated `history/+page.svelte` to use `synthesis_report` instead of `key_insights.critical_insights`. All research workflow legacy code removed. Remaining `key_insights`/`critical_insights` references are in `HistoricalEarningsDisplay.svelte` which is a separate feature with its own types (unrelated to research workflow).
 
 ---
 

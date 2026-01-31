@@ -201,11 +201,11 @@ Provide a comprehensive qualitative analysis."""
         if not output_text:
             return f"[Qualitative analysis for {symbol} - no results returned]"
 
-        # Add note about disabled search if applicable
+        # Add note about partial search capability if applicable
         if not ENABLE_WEB_SEARCH:
-            output_text = f"*Note: Web search disabled - analysis based on X/Twitter data only*\n\n{output_text}"
+            output_text = f"*Note: Analysis based on social media sources only - traditional news sources temporarily unavailable*\n\n{output_text}"
         elif not ENABLE_X_SEARCH:
-            output_text = f"*Note: X search disabled - analysis based on web sources only*\n\n{output_text}"
+            output_text = f"*Note: Analysis based on web sources only - social media sentiment temporarily unavailable*\n\n{output_text}"
 
         return output_text
 
@@ -259,18 +259,7 @@ def _get_disabled_message(symbol: str) -> str:
     """Return a message when all search capabilities are disabled."""
     return f"""## Qualitative Analysis for {symbol}
 
-**All search capabilities are currently disabled.**
+**Qualitative research is temporarily disabled.**
 
-To enable search, set in your `.env` file:
-```
-ENABLE_WEB_SEARCH=True   # Web search for news, articles, press releases
-ENABLE_X_SEARCH=True     # X/Twitter search for real-time sentiment
-```
-
-You can enable them independently based on your needs:
-- **Web search only**: Set `ENABLE_WEB_SEARCH=True` (good for traditional news sources)
-- **X search only**: Set `ENABLE_X_SEARCH=True` (good for real-time sentiment, faster/cheaper)
-- **Both enabled**: Set both to `True` (comprehensive analysis - recommended)
-
-Note: Search uses xAI's server-side tools which incur additional API costs.
+Live news and sentiment analysis are currently unavailable. Quantitative analysis and macro economic data remain available for your research.
 """
