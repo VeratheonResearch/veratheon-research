@@ -603,27 +603,17 @@ Frontend expects 14 sub-jobs with status tracking. New workflow has 5 agents run
 4. `synthesis_agent` - Combines all reports
 5. `trade_advice_agent` - Trade recommendations
 
-- [ ] Update `JobTracker` to create sub-jobs for each agent
-  > **Comments:**
-  > Currently only tracks main flow. Need to emit sub-job entries for:
-  > - quantitative_agent (running → completed)
-  > - qualitative_agent (running → completed)
-  > - macro_report (running → completed)
-  > - synthesis_agent (running → completed)
-  > - trade_advice_agent (running → completed)
+- [x] Update `JobTracker` to create sub-jobs for each agent
+  > **Comments:** Added `create_sub_job()` and `update_sub_job_status()` helper methods to `src/lib/supabase_job_tracker.py`. These convenience methods simplify sub-job creation and status updates within the workflow.
 
-- [ ] Update workflow to emit progress events
-  > **Comments:**
-  > In `src/agents/workflow.py`, add job tracker calls before/after each agent.
+- [x] Update workflow to emit progress events
+  > **Comments:** Updated `src/agents/workflow.py` to accept optional `main_job_id` parameter. Added `run_with_tracking()` helper that wraps agent coroutines with sub-job status updates (pending → running → completed/failed). Creates sub-jobs for all 5 agents upfront, then tracks each agent's progress.
 
-- [ ] Update frontend `TOTAL_RESEARCH_STEPS` constant from 14 to 5
-  > **Comments:**
-  > Located in `/src/routes/+page.svelte`
+- [x] Update frontend `TOTAL_RESEARCH_STEPS` constant from 14 to 5
+  > **Comments:** Updated constant in `veratheon-ui/src/routes/+page.svelte`. Added comment explaining the 5 agents: quantitative, qualitative, macro, synthesis, trade_advice.
 
-- [ ] Update `ResearchFlowsSection.svelte` to display new agent names
-  > **Comments:**
-  > Component displays sub-job list with status badges.
-  > Update to show: Quantitative, Qualitative, Macro, Synthesis, Trade Advice
+- [x] Update `ResearchFlowsSection.svelte` to display new agent names
+  > **Comments:** Added `AGENT_DISPLAY_NAMES` mapping and `getDisplayName()` function in `veratheon-ui/src/lib/components/ResearchFlowsSection.svelte`. Maps internal names to user-friendly labels: "Quantitative Analysis", "Qualitative Research", "Macro Economic", "Synthesis", "Trade Ideas".
 
 ---
 

@@ -10,6 +10,7 @@ Main entry point for the three-pillar research workflow:
 """
 
 import asyncio
+import logging
 from dataclasses import dataclass
 from typing import Optional, Union
 
@@ -19,6 +20,9 @@ from src.agents.macro_report import fetch_macro_report as fetch_macro_data, Macr
 from src.agents.synthesis_agent import run_synthesis_agent as run_synthesis
 from src.agents.trade_advice_agent import run_trade_advice_agent as run_trade_advice
 from src.lib.clients.alpha_vantage_client import AlphaVantageClient
+from src.lib.supabase_job_tracker import get_job_tracker, JobStatus
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -105,12 +109,13 @@ async def run_synthesis_agent(
     )
 
 
-async def run_autonomous_workflow(symbol: str) -> WorkflowResult:
+async def run_autonomous_workflow(symbol: str, main_job_id: Optional[str] = None) -> WorkflowResult:
     """
     Execute the full autonomous research workflow for a stock symbol.
 
     Args:
         symbol: Stock ticker symbol (e.g., 'AAPL')
+        main_job_id: Optional job ID for progress tracking via Supabase Realtime
 
     Returns:
         WorkflowResult containing all reports and analysis
@@ -118,15 +123,78 @@ async def run_autonomous_workflow(symbol: str) -> WorkflowResult:
     symbol = symbol.upper().strip()
     result = WorkflowResult(symbol=symbol)
 
+    # Sub-job tracking (only if main_job_id is provided)
+    job_tracker = None
+    sub_jobs = {}  # Maps agent name to sub_job_id
+
+    if main_job_id:
+        try:
+            job_tracker = get_job_tracker()
+
+            # Create sub-jobs for all 5 agents
+            agent_names = [
+                "quantitative_agent",
+                "qualitative_agent",
+                "macro_report",
+                "synthesis_agent",
+                "trade_advice_agent"
+            ]
+
+            for agent_name in agent_names:
+                sub_job = job_tracker.create_sub_job(
+                    main_job_id=main_job_id,
+                    symbol=symbol,
+                    job_name=agent_name
+                )
+                sub_jobs[agent_name] = sub_job["sub_job_id"]
+                logger.info(f"Created sub-job for {agent_name}: {sub_job['sub_job_id']}")
+
+        except Exception as e:
+            logger.warning(f"Failed to create sub-jobs for progress tracking: {e}")
+            job_tracker = None  # Disable tracking if sub-job creation fails
+
+    async def run_with_tracking(agent_name: str, coro):
+        """Run an agent coroutine with sub-job status tracking."""
+        if job_tracker and agent_name in sub_jobs:
+            job_tracker.update_sub_job_status(
+                sub_jobs[agent_name],
+                JobStatus.RUNNING,
+                step=f"Running {agent_name}"
+            )
+
+        try:
+            result = await coro
+            if job_tracker and agent_name in sub_jobs:
+                job_tracker.update_sub_job_status(
+                    sub_jobs[agent_name],
+                    JobStatus.COMPLETED,
+                    step=f"Completed {agent_name}"
+                )
+            return result
+        except Exception as e:
+            if job_tracker and agent_name in sub_jobs:
+                job_tracker.update_sub_job_status(
+                    sub_jobs[agent_name],
+                    JobStatus.FAILED,
+                    step=f"Failed {agent_name}",
+                    error=str(e)
+                )
+            raise
+
     try:
         # First, get the company's sector for macro report (quick API call)
         sector = await get_company_sector(symbol)
 
-        # Phase 1: Run quantitative and qualitative agents in parallel
-        # (Macro can also run in parallel since it's just data fetching)
-        quant_task = asyncio.create_task(run_quantitative_agent(symbol))
-        qual_task = asyncio.create_task(run_qualitative_agent(symbol))
-        macro_task = asyncio.create_task(fetch_macro_report(sector=sector))
+        # Phase 1: Run quantitative, qualitative, and macro agents in parallel
+        quant_task = asyncio.create_task(
+            run_with_tracking("quantitative_agent", run_quantitative_agent(symbol))
+        )
+        qual_task = asyncio.create_task(
+            run_with_tracking("qualitative_agent", run_qualitative_agent(symbol))
+        )
+        macro_task = asyncio.create_task(
+            run_with_tracking("macro_report", fetch_macro_report(sector=sector))
+        )
 
         # Wait for all to complete
         result.quantitative_report = await quant_task
@@ -134,17 +202,23 @@ async def run_autonomous_workflow(symbol: str) -> WorkflowResult:
         result.macro_report = await macro_task
 
         # Phase 2: Synthesize all reports
-        result.synthesis_report = await run_synthesis_agent(
-            symbol=symbol,
-            quantitative=result.quantitative_report,
-            qualitative=result.qualitative_report,
-            macro=result.macro_report
+        result.synthesis_report = await run_with_tracking(
+            "synthesis_agent",
+            run_synthesis_agent(
+                symbol=symbol,
+                quantitative=result.quantitative_report,
+                qualitative=result.qualitative_report,
+                macro=result.macro_report
+            )
         )
 
         # Phase 3: Generate trade advice based on synthesis
-        result.trade_advice = await run_trade_advice(
-            symbol=symbol,
-            synthesis_report=result.synthesis_report
+        result.trade_advice = await run_with_tracking(
+            "trade_advice_agent",
+            run_trade_advice(
+                symbol=symbol,
+                synthesis_report=result.synthesis_report
+            )
         )
 
     except Exception as e:

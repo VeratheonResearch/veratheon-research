@@ -286,6 +286,62 @@ class JobTracker:
         """
         return self.update_job_status(job_id, JobStatus.CANCELLED, use_main_job_id=use_main_job_id)
 
+    def create_sub_job(self, main_job_id: str, symbol: str, job_name: str,
+                       job_type: str = "autonomous_research",
+                       metadata: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
+        """
+        Create a sub-job for an existing main job.
+
+        This is a convenience method for creating sub-jobs within a workflow.
+
+        Args:
+            main_job_id: The main job ID to associate this sub-job with
+            symbol: Stock symbol being analyzed
+            job_name: Name of this sub-job (e.g., 'quantitative_agent', 'qualitative_agent')
+            job_type: Type of job (defaults to 'autonomous_research')
+            metadata: Optional additional metadata
+
+        Returns:
+            Dict with 'main_job_id', 'sub_job_id', and 'id' (row ID)
+        """
+        return self.create_job(
+            job_type=job_type,
+            symbol=symbol,
+            metadata=metadata,
+            main_job_id=main_job_id,
+            is_sub_job=True,
+            job_name=job_name
+        )
+
+    def update_sub_job_status(self, sub_job_id: str, status: JobStatus,
+                              step: Optional[str] = None,
+                              result: Optional[Dict[str, Any]] = None,
+                              error: Optional[str] = None) -> bool:
+        """
+        Update a sub-job's status.
+
+        This is a convenience method that wraps update_job_status with use_sub_job_id=True.
+
+        Args:
+            sub_job_id: The sub_job_id to update
+            status: New job status
+            step: Optional step description
+            result: Optional result data (for completed jobs)
+            error: Optional error message (for failed jobs)
+
+        Returns:
+            True if successful, False otherwise
+        """
+        return self.update_job_status(
+            job_id=sub_job_id,
+            status=status,
+            step=step,
+            result=result,
+            error=error,
+            use_main_job_id=False,
+            use_sub_job_id=True
+        )
+
     def add_user_research_history(self, user_id: str, symbol: str, main_job_id: str, metadata: Optional[Dict[str, Any]] = None) -> bool:
         """
         Add an entry to user_research_history table.

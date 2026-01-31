@@ -45,8 +45,8 @@ async def run_autonomous_research_background(main_job_id: str, symbol: str):
         # Update status to running
         job_tracker.update_job_status(main_job_id, JobStatus.RUNNING, step="Starting autonomous research", use_main_job_id=True)
 
-        # Run the autonomous workflow
-        workflow_result: WorkflowResult = await run_autonomous_workflow(symbol)
+        # Run the autonomous workflow with job tracking
+        workflow_result: WorkflowResult = await run_autonomous_workflow(symbol, main_job_id=main_job_id)
 
         # Check for errors in the workflow result
         if workflow_result.error:
