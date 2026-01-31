@@ -399,13 +399,13 @@ Start with quantitative since we have Alpha Vantage data already working.
 
 ### Phase 2: Enhance & Polish
 
-#### 2.1 Add Trade Advice
+#### 2.1 Add Trade Advice (COMPLETED)
 
-- [ ] Create trade advice agent or add to synthesis
-  > **Comments:**
+- [x] Create trade advice agent or add to synthesis
+  > **Comments:** Created `src/agents/trade_advice_agent.py` as a separate agent (not part of synthesis) that takes the synthesis report and generates actionable trade ideas. Includes comprehensive prompt with structured output: Trade Setup Summary, Position Considerations, Entry Strategy, Position Sizing, Risk Management, Profit Targets, Catalysts & Timing, Alternative Approaches.
 
-- [ ] Include buy/sell/hold recommendation with reasoning
-  > **Comments:**
+- [x] Include trade advice as advisory only and not a recommendation.
+  > **Comments:** Added prominent disclaimers at multiple levels: (1) agent instructions emphasize "ADVISORY ONLY" and "NOT a financial recommendation", (2) output is prepended with warning notice box, (3) final disclaimer at end of output, (4) format_workflow_result displays section as "TRADE IDEAS (ADVISORY ONLY)".
 
 #### 2.2 Add X/Twitter Search (if valuable)
 

@@ -6,6 +6,7 @@ Main entry point for the three-pillar research workflow:
 - Qualitative Agent: News and sentiment analysis
 - Macro Report: Economic indicators (no LLM)
 - Synthesis Agent: Combines all into unified report
+- Trade Advice Agent: Generates actionable trade ideas (advisory only)
 """
 
 import asyncio
@@ -16,6 +17,7 @@ from src.agents.quantitative_agent import run_quantitative_analysis
 from src.agents.qualitative_agent import run_qualitative_analysis
 from src.agents.macro_report import fetch_macro_report as fetch_macro_data, MacroReport
 from src.agents.synthesis_agent import run_synthesis_agent as run_synthesis
+from src.agents.trade_advice_agent import run_trade_advice_agent as run_trade_advice
 from src.lib.clients.alpha_vantage_client import AlphaVantageClient
 
 
@@ -139,6 +141,12 @@ async def run_autonomous_workflow(symbol: str) -> WorkflowResult:
             macro=result.macro_report
         )
 
+        # Phase 3: Generate trade advice based on synthesis
+        result.trade_advice = await run_trade_advice(
+            symbol=symbol,
+            synthesis_report=result.synthesis_report
+        )
+
     except Exception as e:
         result.error = str(e)
 
@@ -182,6 +190,10 @@ def format_workflow_result(result: WorkflowResult) -> str:
         "SYNTHESIS",
         "-" * 40,
         result.synthesis_report or "Not available",
+        "",
+        "TRADE IDEAS (ADVISORY ONLY)",
+        "-" * 40,
+        result.trade_advice or "Not available",
         "",
         "=" * 60,
     ])
