@@ -426,16 +426,16 @@ Start with quantitative since we have Alpha Vantage data already working.
   > - Updated prompts to adjust based on enabled search types
   > - Updated .env.example with new variable documentation
 
-#### 2.3 Improve Prompts
+#### 2.3 Improve Prompts (COMPLETED)
 
-- [ ] Tune quantitative agent prompts based on output quality
-  > **Comments:**
+- [x] Tune quantitative agent prompts based on output quality
+  > **Comments:** Restructured to be table-driven and concise. Added: One-Line Thesis, Quarterly Scorecard table, Next Quarter Setup, Valuation Verdict, Financial Health Check, Key Numbers table, Watch List. Focuses on quarterly earnings lens per vision statement. Uses specific numbers and flags missing data.
 
-- [ ] Tune qualitative agent prompts based on output quality
-  > **Comments:**
+- [x] Tune qualitative agent prompts based on output quality
+  > **Comments:** Added structured search strategy (priority vs secondary searches), source credibility guidance, "Story in 30 Seconds" summary, Last Quarter Recap with management quotes, Upcoming Catalysts table, Sentiment Check, Risk Radar. Emphasizes actionable insights over verbose summaries.
 
-- [ ] Tune synthesis prompts
-  > **Comments:**
+- [x] Tune synthesis prompts
+  > **Comments:** Reduced target length to 400-600 words. Added: Investment Thesis (2-3 sentences), condensed The Picture section, Key Insights (3-5 synthesized bullets), Risk/Reward Summary table, Near-Term Setup, Bottom Line verdict table. Includes explicit handling for missing qualitative data. Also tuned Trade Advice agent for consistency (table-driven entry/exit/stop, single key catalyst focus).
 
 #### 2.4 Add Caching
 
