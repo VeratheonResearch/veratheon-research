@@ -662,55 +662,26 @@ Update SvelteKit API routes and client functions.
 
 ---
 
-#### 4.6 Type Definitions (veratheon-ui)
+#### 4.6 Type Definitions (veratheon-ui) (COMPLETED)
 
 Replace all legacy types with new data structures. No backwards compatibility.
 
-- [ ] Rewrite `/src/lib/research-types.ts` completely
-  > **Comments:**
-  > New types required:
-  > ```typescript
-  > interface WorkflowResult {
-  >   symbol: string;
-  >   quantitative_report: string;
-  >   qualitative_report: string;
-  >   macro_report: MacroReport;
-  >   synthesis_report: string;
-  >   trade_advice: string;
-  > }
-  >
-  > interface MacroReport {
-  >   indicators: MacroIndicator[];
-  >   sector_etf?: SectorETF;
-  >   report_date: string;
-  > }
-  >
-  > interface MacroIndicator {
-  >   name: string;
-  >   value: string;
-  >   trend?: string;
-  >   context?: string;
-  > }
-  >
-  > interface SectorETF {
-  >   symbol: string;
-  >   name: string;
-  >   price?: number;
-  >   change_percent?: number;
-  > }
-  > ```
+- [x] Rewrite `/src/lib/research-types.ts` completely
+  > **Comments:** Completed in 4.2 and further enhanced here. File now contains comprehensive type hierarchy:
+  > - WorkflowResult with all report fields (quantitative_report, qualitative_report, macro_report, synthesis_report, trade_advice)
+  > - MacroReport with nested structure (inflation, employment, interest_rates, growth, market) matching backend to_dict() output
+  > - EconomicIndicator and MarketIndicator for macro data
+  > - Trade-related types (TradeDetails, Trade, TradeResponse, TradeValidationRequest)
+  > - Job tracking types (JobStatus, SubJob, JobStep) consolidated from useRealtimeResearch.ts
 
-- [ ] Update `SubJob` interface for new agent names
-  > **Comments:**
-  > Names: quantitative_agent, qualitative_agent, macro_report, synthesis_agent, trade_advice_agent
+- [x] Update `SubJob` interface for new agent names
+  > **Comments:** Interface uses generic `job_name: string` field which works for all agent names. Added documentation comment listing the 5 agent names: quantitative_agent, qualitative_agent, macro_report, synthesis_agent, trade_advice_agent.
 
-- [ ] Update `JobStatus` interface - result is now `WorkflowResult`
-  > **Comments:**
-  > `metadata.result` is `WorkflowResult`, not legacy structure.
+- [x] Update `JobStatus` interface - result is now `WorkflowResult`
+  > **Comments:** Already had `result?: WorkflowResult` field. Consolidated from useRealtimeResearch.ts to research-types.ts for better organization.
 
-- [ ] Remove any unused legacy type exports
-  > **Comments:**
-  > Clean sweep - delete anything not used by new implementation.
+- [x] Remove any unused legacy type exports
+  > **Comments:** All legacy types (ComprehensiveReport, KeyInsights, legacy ResearchResult) were removed in 4.2. No remaining legacy types found. All components verified to use new WorkflowResult structure.
 
 ---
 
