@@ -632,30 +632,33 @@ Rewrite UI components to display new `WorkflowResult` structure. Remove all lega
 
 ---
 
-#### 4.5 API Client Updates (veratheon-ui)
+#### 4.5 API Client Updates (veratheon-ui) (COMPLETED)
 
 Update SvelteKit API routes and client functions.
 
-- [ ] Update `/src/lib/api/research.ts` - `startResearch()` function
+- [x] Update `/src/lib/api/research.ts` - `startResearch()` function
   > **Comments:**
-  > May need to update request/response handling for new structure.
+  > Removed `forceRecompute` and `model` parameters. Backend only accepts `symbol` now. Also removed `forceRecompute` parameter from `saveJobToHistory()` function.
 
-- [ ] Update `/src/routes/api/research/start/+server.ts` proxy endpoint
+- [x] Update `/src/routes/api/research/start/+server.ts` proxy endpoint
   > **Comments:**
-  > Verify it correctly proxies to new `/research` endpoint.
+  > Removed `force_recompute` and `model` parameter handling. Only forwards `symbol` to backend `/research` endpoint.
 
-- [ ] Update `/src/routes/api/research/status/[symbol]/+server.ts`
+- [x] Update `/src/routes/api/research/status/[symbol]/+server.ts`
   > **Comments:**
-  > Verify job status fetching works with new structure.
+  > Already updated in 4.1. Uses new `/jobs/{job_id}` and `/jobs/symbol/{symbol}` endpoints. Works correctly with new structure.
 
-- [ ] Update `/src/routes/api/research/report-status/[symbol]/+server.ts`
+- [x] Update `/src/routes/api/research/report-status/[symbol]/+server.ts`
   > **Comments:**
-  > Verify cached report checking works.
+  > Already updated in 4.1. Simple proxy to backend `/report-status/{symbol}`. Works correctly.
 
-- [ ] Update `/src/lib/composables/useRealtimeResearch.ts`
+- [x] Update `/src/lib/composables/useRealtimeResearch.ts`
   > **Comments:**
-  > Verify Supabase Realtime subscription works with new job structure.
-  > May need to update how sub-jobs are parsed from Realtime events.
+  > Already compatible with new structure. Uses `WorkflowResult` type from 4.2. Handles sub-jobs correctly. No changes needed.
+
+- [x] Update frontend components that call `startResearch()`
+  > **Comments:**
+  > Updated `+page.svelte` to remove `forceRecompute` variable and `getPreferredModel()` function. Updated `ResearchInputCard.svelte` to remove "Recompute" checkbox UI. Simplified API calls to only pass `symbol`.
 
 ---
 
