@@ -21,6 +21,7 @@ from legacy.flows.research_flow import main_research_flow  # noqa: E402
 from src.lib.supabase_job_tracker import get_job_tracker, JobStatus  # noqa: E402
 from src.lib.alpha_vantage_api import call_alpha_vantage_symbol_search  # noqa: E402
 from legacy.research.debug.agent_debug import run_agent_debug, AgentDebugRequest, AgentDebugResponse  # noqa: E402
+from src.agents.workflow import run_autonomous_workflow, WorkflowResult  # noqa: E402
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("LiteLLM").setLevel(logging.WARNING)
@@ -32,6 +33,9 @@ class ResearchRequest(BaseModel):
     symbol: str
     force_recompute: bool = False
     model: str = "o4_mini"  # Default to o4_mini
+
+class AutonomousResearchRequest(BaseModel):
+    symbol: str
 
 class JobResponse(BaseModel):
     job_id: str
@@ -57,6 +61,77 @@ async def run_research_background(main_job_id: str, symbol: str, force_recompute
     except Exception as e:
         logger.exception(f"Error running research for {symbol} (main_job_id {main_job_id})")
         job_tracker.update_job_status(main_job_id, JobStatus.FAILED, step="Research failed", error=str(e), use_main_job_id=True)
+
+
+async def run_autonomous_research_background(main_job_id: str, symbol: str):
+    """Background task to run autonomous research workflow and update job status."""
+    job_tracker = get_job_tracker()
+
+    try:
+        # Update status to running
+        job_tracker.update_job_status(main_job_id, JobStatus.RUNNING, step="Starting autonomous research", use_main_job_id=True)
+
+        # Run the autonomous workflow
+        workflow_result: WorkflowResult = await run_autonomous_workflow(symbol)
+
+        # Check for errors in the workflow result
+        if workflow_result.error:
+            job_tracker.update_job_status(
+                main_job_id,
+                JobStatus.FAILED,
+                step="Autonomous research failed",
+                error=workflow_result.error,
+                use_main_job_id=True
+            )
+            logger.error(f"Autonomous research failed for {symbol}: {workflow_result.error}")
+            return
+
+        # Convert WorkflowResult to dict for storage
+        # Handle macro_report which may be a MacroReport dataclass
+        macro_data = None
+        if workflow_result.macro_report:
+            from src.agents.macro_report import MacroReport
+            if isinstance(workflow_result.macro_report, MacroReport):
+                macro_data = {
+                    "indicators": [
+                        {
+                            "name": ind.name,
+                            "value": ind.value,
+                            "unit": ind.unit,
+                            "trend": ind.trend,
+                            "context": ind.context
+                        }
+                        for ind in workflow_result.macro_report.indicators
+                    ],
+                    "sector_etf": workflow_result.macro_report.sector_etf,
+                    "fetched_at": workflow_result.macro_report.fetched_at
+                }
+            else:
+                macro_data = workflow_result.macro_report
+
+        result_dict = {
+            "symbol": workflow_result.symbol,
+            "quantitative_report": workflow_result.quantitative_report,
+            "qualitative_report": workflow_result.qualitative_report,
+            "macro_report": macro_data,
+            "synthesis_report": workflow_result.synthesis_report,
+            "trade_advice": workflow_result.trade_advice
+        }
+
+        # Mark as completed with result
+        job_tracker.update_job_status(
+            main_job_id,
+            JobStatus.COMPLETED,
+            step="Autonomous research completed",
+            result=result_dict,
+            use_main_job_id=True
+        )
+
+        logger.info(f"Autonomous research completed for {symbol} (main_job_id {main_job_id})")
+
+    except Exception as e:
+        logger.exception(f"Error running autonomous research for {symbol} (main_job_id {main_job_id})")
+        job_tracker.update_job_status(main_job_id, JobStatus.FAILED, step="Autonomous research failed", error=str(e), use_main_job_id=True)
 
 @app.get("/health")
 async def health():
@@ -98,6 +173,54 @@ async def start_research(req: ResearchRequest, background_tasks: BackgroundTasks
     except Exception as e:
         logger.exception("Error starting research job")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/research/autonomous")
+async def start_autonomous_research(req: AutonomousResearchRequest, background_tasks: BackgroundTasks) -> JobResponse:
+    """Start an autonomous research job using the three-pillar workflow.
+
+    This endpoint runs the new autonomous research workflow which includes:
+    - Quantitative Agent: Financial health analysis using Alpha Vantage data
+    - Qualitative Agent: News and sentiment via xAI web/X search
+    - Macro Report: Economic indicators (no LLM)
+    - Synthesis Agent: Combines all into unified report
+    - Trade Advice Agent: Generates actionable trade ideas (advisory only)
+
+    Returns a job_id for tracking progress via Supabase Realtime.
+    """
+    try:
+        symbol_upper = req.symbol.upper()
+        logger.info(f"Starting autonomous research job for symbol={symbol_upper}")
+
+        job_tracker = get_job_tracker()
+
+        # Create new job
+        job_result = job_tracker.create_job(
+            job_type="autonomous_research",
+            symbol=symbol_upper,
+            metadata={
+                "workflow": "autonomous",
+                "requested_at": datetime.now().isoformat()
+            },
+            is_sub_job=False,
+            job_name="main_flow"
+        )
+
+        main_job_id = job_result["main_job_id"]
+
+        # Start background task
+        background_tasks.add_task(run_autonomous_research_background, main_job_id, symbol_upper)
+
+        return JobResponse(
+            job_id=main_job_id,
+            status="pending",
+            message=f"Autonomous research job started for {symbol_upper}"
+        )
+
+    except Exception as e:
+        logger.exception("Error starting autonomous research job")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/report-status/{symbol}")
 async def check_report_status(symbol: str):

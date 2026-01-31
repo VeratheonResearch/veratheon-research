@@ -437,15 +437,15 @@ Start with quantitative since we have Alpha Vantage data already working.
 - [x] Tune synthesis prompts
   > **Comments:** Reduced target length to 400-600 words. Added: Investment Thesis (2-3 sentences), condensed The Picture section, Key Insights (3-5 synthesized bullets), Risk/Reward Summary table, Near-Term Setup, Bottom Line verdict table. Includes explicit handling for missing qualitative data. Also tuned Trade Advice agent for consistency (table-driven entry/exit/stop, single key catalyst focus).
 
-#### 2.4 Add Caching
+#### 2.4 Add Caching - NOT NEEDED FOR NOW - SKIP
 
-- [ ] Cache quantitative data (longer TTL)
+- [ ] SKIP - Cache quantitative data (longer TTL)
   > **Comments:**
 
-- [ ] Cache qualitative data (shorter TTL - news changes)
+- [ ] SKIP - Cache qualitative data (shorter TTL - news changes)
   > **Comments:**
 
-- [ ] Cache macro data (medium TTL)
+- [ ] SKIP - Cache macro data (medium TTL)
   > **Comments:**
 
 ---
@@ -454,14 +454,14 @@ Start with quantitative since we have Alpha Vantage data already working.
 
 #### 3.1 API Endpoint
 
-- [ ] Add `POST /research/autonomous` endpoint
-  > **Comments:**
+- [x] Add `POST /research/autonomous` endpoint
+  > **Comments:** Added endpoint in `server/api.py`. Takes `{"symbol": "AAPL"}` request body, creates job in Supabase, runs autonomous workflow in background task. Returns `job_id` for tracking via Realtime.
 
-- [ ] Wire up job tracking
-  > **Comments:**
+- [x] Wire up job tracking
+  > **Comments:** Uses existing `JobTracker` with `job_type="autonomous_research"` and `job_name="main_flow"`. Converts `WorkflowResult` dataclass to dict for storage, including handling `MacroReport` dataclass serialization. Updates status through `pending` → `running` → `completed/failed`.
 
-- [ ] Test via curl/Postman
-  > **Comments:**
+- [x] Test via curl/Postman
+  > **Comments:** Verified with `curl -X POST http://localhost:8085/research/autonomous -H "Content-Type: application/json" -d '{"symbol": "AAPL"}'`. Returns `{"job_id": "uuid", "status": "pending", "message": "Autonomous research job started for AAPL"}`. Endpoint visible in `/openapi.json`.
 
 #### 3.2 Cleanup
 
