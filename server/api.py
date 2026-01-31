@@ -66,20 +66,8 @@ async def run_autonomous_research_background(main_job_id: str, symbol: str):
         if workflow_result.macro_report:
             from src.agents.macro_report import MacroReport
             if isinstance(workflow_result.macro_report, MacroReport):
-                macro_data = {
-                    "indicators": [
-                        {
-                            "name": ind.name,
-                            "value": ind.value,
-                            "unit": ind.unit,
-                            "trend": ind.trend,
-                            "context": ind.context
-                        }
-                        for ind in workflow_result.macro_report.indicators
-                    ],
-                    "sector_etf": workflow_result.macro_report.sector_etf,
-                    "fetched_at": workflow_result.macro_report.fetched_at
-                }
+                # Use the to_dict() method which properly serializes all fields
+                macro_data = workflow_result.macro_report.to_dict()
             else:
                 macro_data = workflow_result.macro_report
 

@@ -575,20 +575,14 @@ interface WorkflowResult {
 }
 ```
 
-- [ ] Remove legacy types from `/src/lib/research-types.ts`
-  > **Comments:**
-  > Delete:
-  > - `ComprehensiveReport` interface
-  > - `KeyInsights` interface
-  > - Legacy `ResearchResult` interface
+- [x] Remove legacy types from `/src/lib/research-types.ts`
+  > **Comments:** Removed `ComprehensiveReport`, `KeyInsights`, and legacy `ResearchResult` interfaces. Updated `TradeValidationRequest` to use `WorkflowResult` instead.
 
-- [ ] Add new `WorkflowResult` type to `/src/lib/research-types.ts`
-  > **Comments:**
-  > Replace with new structure matching backend output.
+- [x] Add new `WorkflowResult` type to `/src/lib/research-types.ts`
+  > **Comments:** Added complete type hierarchy matching backend: `EconomicIndicator`, `MarketIndicator`, `MacroReport`, and `WorkflowResult` interfaces with proper nullable types.
 
-- [ ] Update all imports/usages of legacy types across frontend
-  > **Comments:**
-  > Search for `ComprehensiveReport`, `KeyInsights`, `ResearchResult` and update.
+- [x] Update all imports/usages of legacy types across frontend
+  > **Comments:** Updated imports in: `useRealtimeResearch.ts`, `+page.svelte`, `ResearchReportDisplay.svelte`, `ResearchStatusHeader.svelte`, `ProcessDetailsModal.svelte`. Changed all `ResearchResult` references to `WorkflowResult`. Updated debug logging to reference new structure (`synthesis_report` instead of `comprehensive_report`). Rewrote `ResearchReportDisplay.svelte` with new collapsible section UI for synthesis, trade advice, quantitative, qualitative, and macro reports.
 
 ---
 
