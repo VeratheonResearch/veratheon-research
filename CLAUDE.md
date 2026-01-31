@@ -6,9 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Package Manager**: This repository uses `uv` (Astral's package manager). Do NOT use `pip` or `pipenv`.
 
-**Run the main application**:
+**Run autonomous research for a stock**:
 ```bash
-uv run python run.py
+uv run python run.py AAPL
+uv run python run.py MSFT -v  # verbose mode
 ```
 
 **Run the FastAPI server**:
@@ -25,17 +26,12 @@ docker-compose up
 
 **Run tests**:
 ```bash
-uv run pytest
-```
-
-**Run specific test file**:
-```bash
-uv run pytest tests/unit/historical_earnings/test_historical_earnings_util.py -v
+uv run python -m pytest tests/unit/ -v
 ```
 
 **Run tests with coverage**:
 ```bash
-uv run pytest --cov=src
+uv run python -m pytest --cov=src
 ```
 
 **Install dependencies**:
@@ -43,84 +39,100 @@ uv run pytest --cov=src
 uv sync
 ```
 
-**UI Development** (SvelteKit frontend in `agent-ui/`):
-```bash
-cd agent-ui
-npm install        # Install dependencies
-npm run dev        # Development server (runs on http://localhost:5173)
-npm run build      # Production build  
-npm run preview    # Preview production build
-npm run test       # Run Vitest tests
-npm run test:unit  # Run unit tests
-npm run lint       # ESLint + Prettier linting
-npm run format     # Format code with Prettier
-npm run check      # Svelte type checking
-```
-
-**UI Tech Stack**:
-- **Svelte 5.x + SvelteKit 2.x**: Full-stack framework with TypeScript support
-- **Tailwind CSS 4.x**: Utility-first CSS framework with Vite plugin
-- **DaisyUI 5.x**: Tailwind CSS component library for UI components
-- **Vitest**: Testing framework with browser testing via Playwright
-- **ESLint + Prettier**: Code linting and formatting with Svelte support
-- **Marked**: Markdown parsing for analysis content rendering
-
-**UI Structure**:
-- `src/routes/+page.svelte`: Main research interface
-- `src/routes/+layout.svelte`: App layout and navigation
-- `src/routes/api/research/+server.ts`: SvelteKit API endpoint for research requests
-- `src/routes/api/status-updates/+server.ts`: Real-time status updates endpoint
-
 ## Architecture
 
-This is a **Veratheon Research Agent** for stock analysis using async flows with OpenAI Agents SDK, featuring a FastAPI backend and SvelteKit UI frontend.
+This is a **Veratheon Research Agent** for stock analysis using a three-pillar autonomous workflow with OpenAI Agents SDK, featuring a FastAPI backend and SvelteKit UI frontend.
 
-### Key Architectural Principles
+### Three-Pillar Autonomous Workflow
 
-1. **Strict Separation of Concerns**:
-   - **Flows** (`src/flows/`): Thin wrappers for async orchestration, contain NO business logic
-   - **Tasks** (`src/tasks/`): Data orchestration only, contain NO business logic  
-   - **Business Logic** (`src/research/`): All core research logic lives here
+The agent uses three parallel research pillars that are synthesized into a comprehensive report:
 
-2. **Data Flow Architecture**:
-   - Main flow: `src/flows/research_flow.py:main_research_flow()`
-   - Core subflows: Historical earnings, financial statements, earnings projections, management guidance, forward PE analysis, news sentiment, trade ideas
-   - Uses Alpha Vantage API for financial data (`src/lib/`)
+```
+                        User Query: "AAPL"
+                               │
+          ┌────────────────────┼────────────────────┐
+          │                    │                    │
+          ▼                    ▼                    ▼
+┌───────────────────┐ ┌───────────────────┐ ┌───────────────────┐
+│  QUANTITATIVE     │ │  QUALITATIVE      │ │  MACRO ECONOMIC   │
+│  AGENT            │ │  AGENT            │ │  REPORT           │
+│                   │ │                   │ │                   │
+│  Tools:           │ │  Tools:           │ │  (No LLM - data   │
+│  • Alpha Vantage  │ │  • xAI web_search │ │   lookup only)    │
+│    - Overview     │ │  • xAI x_search   │ │                   │
+│    - Financials   │ │                   │ │  Indicators:      │
+│    - Earnings     │ │  Focus:           │ │  • CPI, Inflation │
+│    - Estimates    │ │  • Recent news    │ │  • Unemployment   │
+│    - Quote        │ │  • Market buzz    │ │  • Fed Funds Rate │
+│                   │ │  • Social/X posts │ │  • Treasury Yields│
+│  Focus:           │ │  • Analyst views  │ │  • VIX, GDP       │
+│  Quarterly EPS    │ │  • Upcoming events│ │  • Sector ETF     │
+│  Valuation        │ │                   │ │                   │
+└───────────────────┘ └───────────────────┘ └───────────────────┘
+          │                    │                    │
+          └────────────────────┼────────────────────┘
+                               │
+                               ▼
+                ┌───────────────────────────┐
+                │   SYNTHESIS AGENT         │
+                │   Combines all three      │
+                │   perspectives            │
+                └───────────────────────────┘
+                               │
+                               ▼
+                ┌───────────────────────────┐
+                │   TRADE ADVICE AGENT      │
+                │   Actionable ideas        │
+                │   (Advisory only)         │
+                └───────────────────────────┘
+```
 
-3. **Model Management**:
-   - Uses `litellm` for model abstraction (`src/lib/llm_model.py`)
-   - Supports multiple Ollama models (Gemma 27B/12B/4B, GPT-OSS) and OpenAI models
-   - Model selection via `MODEL_SELECTED` environment variable
+### Project Structure
 
-4. **Full-Stack Application**:
-   - **Backend**: FastAPI server (`server.py`) with `/health` and `/research` endpoints
-   - **Frontend**: SvelteKit UI (`agent-ui/`) with Tailwind CSS and DaisyUI
-   - **Infrastructure**: Docker Compose for API/UI, Supabase for caching/state management/RAG
+```
+src/
+├── agents/                      # Autonomous workflow agents
+│   ├── workflow.py              # Main entry point
+│   ├── quantitative_agent.py    # Financial analysis (Alpha Vantage)
+│   ├── qualitative_agent.py     # News/sentiment (xAI search)
+│   ├── macro_report.py          # Economic indicators (no LLM)
+│   ├── synthesis_agent.py       # Combines all reports
+│   └── trade_advice_agent.py    # Trade ideas (advisory)
+│
+├── lib/                         # Shared utilities
+│   ├── llm_model.py             # Model abstraction (xAI Grok)
+│   ├── alpha_vantage_api.py     # Alpha Vantage API client
+│   ├── supabase_cache.py        # Caching layer
+│   └── supabase_job_tracker.py  # Job tracking
+│
+server/
+└── api.py                       # FastAPI endpoints
+```
 
-### Research Pipeline
+### Model Configuration
 
-The agent performs comprehensive stock research through these sequential steps:
-1. **Historical Earnings Analysis**: Establishes foundational baseline patterns
-2. **Financial Statements Analysis**: Analyzes recent changes for projection accuracy
-3. **Independent Earnings Projections**: Creates baseline projections for consensus validation
-4. **Management Guidance Analysis**: Cross-checks against management guidance from earnings calls
-5. **Peer Group Analysis**: Identifies comparable companies (enhanced with financial context)
-6. **Forward PE Sanity Check**: Validates earnings data quality
-7. **Forward PE Analysis**: Calculates valuation metrics (enhanced with projections and guidance)
-8. **News Sentiment Analysis**: Analyzes recent news sentiment (enhanced with earnings context)
-9. **Cross-Reference Analysis**: Cross-validates insights across all previous analyses
-10. **Trade Ideas Generation**: Synthesizes all analyses into actionable insights
+- **Primary Model**: xAI Grok `grok-4-1-fast-reasoning` for analysis and synthesis
+- **Non-Reasoning Model**: `grok-4-1-fast-non-reasoning` for simple extraction tasks
+- Model abstraction via `src/lib/llm_model.py`
+
+### API Endpoints
+
+- `GET /health` - Health check
+- `POST /research` - Start autonomous research job (returns job_id for tracking)
+- `GET /report-status/{symbol}` - Check if report exists for symbol
+- `GET /ticker-search?query=...` - Search for stock symbols
 
 ### Environment Variables
 
 Required in `.env` file:
+- `XAI_API_KEY`: xAI API key for Grok models
 - `ALPHA_VANTAGE_API_KEY`: For financial data
-- `OPENAI_API_KEY`: For AI model access (if using OpenAI)
-- `X_API_KEY`: For API access
 
 Optional in `.env` file:
 - `HOST`: Server host (default: 0.0.0.0)
 - `PORT`: Server port (default: 8085)
+- `ENABLE_WEB_SEARCH`: Enable xAI web search (default: true, costs extra)
+- `ENABLE_X_SEARCH`: Enable xAI X/Twitter search (default: follows ENABLE_WEB_SEARCH)
 - `SUPABASE_URL`: Supabase project URL (e.g., http://127.0.0.1:54321 for local)
 - `SUPABASE_ANON_KEY`: Supabase anonymous/publishable key
 - `SUPABASE_SERVICE_KEY`: Supabase service role key (for server-side operations)
@@ -134,13 +146,6 @@ The application uses Supabase for:
 - **User History**: `user_research_history` table tracks user research activity
 - **System Logs**: `system_logs` table for centralized error tracking
 
-Required Supabase tables:
-- `research_jobs` (bigint id, symbol, status, metadata jsonb, timestamps)
-- `research_cache` (bigint id, cache_key unique, symbol, report_type, data jsonb, expires_at)
-- `research_docs` (bigint id, content, title, embedding vector, metadata jsonb, token_count)
-- `user_research_history` (bigint id, user_id, symbol, job_id, metadata jsonb)
-- `system_logs` (bigint id, log_level, component, message, job_id, symbol, stack_trace)
-
 For local development, run Supabase in a separate directory and use `supabase status` to get connection details.
 
 **Enable Realtime for research_jobs table** (required for frontend live updates):
@@ -148,26 +153,18 @@ For local development, run Supabase in a separate directory and use `supabase st
 alter publication supabase_realtime add table research_jobs;
 ```
 
-**Frontend Configuration**:
-The SvelteKit UI uses Supabase Realtime for live job status updates instead of polling. Configure frontend environment variables in `agent-ui/.env`:
-- `VITE_SUPABASE_URL`: Same as backend SUPABASE_URL
-- `VITE_SUPABASE_ANON_KEY`: Same as backend SUPABASE_ANON_KEY
-
 ### Testing Strategy
 
 - Uses `pytest` with path configuration in `pyproject.toml`
-- Test files in `tests/` directory with unit tests in `tests/unit/`
+- Test files in `tests/unit/` directory
 - Mocks external API calls to avoid hitting real APIs during tests
 - Supabase client is automatically mocked in all tests via `conftest.py` fixtures
 
 ## Development Guidelines
 
-- When adding new research capabilities, put business logic in `src/research/`
-- When adding new data sources, put integration code in `src/lib/`
-- Keep flows and tasks as thin orchestration layers
-- All new features must maintain the separation between orchestration and business logic
+- Agent logic lives in `src/agents/`
+- Shared utilities and API clients go in `src/lib/`
 - Use `uv run` prefix for all Python commands
-- Frontend development uses SvelteKit with TypeScript, Tailwind CSS, and DaisyUI components
 - API endpoints follow REST conventions and return structured JSON responses
 - All external API calls should be mocked in tests to avoid hitting real services
 

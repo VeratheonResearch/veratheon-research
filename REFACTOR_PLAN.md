@@ -463,13 +463,13 @@ Start with quantitative since we have Alpha Vantage data already working.
 - [x] Test via curl/Postman
   > **Comments:** Verified with `curl -X POST http://localhost:8085/research/autonomous -H "Content-Type: application/json" -d '{"symbol": "AAPL"}'`. Returns `{"job_id": "uuid", "status": "pending", "message": "Autonomous research job started for AAPL"}`. Endpoint visible in `/openapi.json`.
 
-#### 3.2 Cleanup
+#### 3.2 Cleanup (COMPLETED)
 
-- [ ] Delete `legacy/` directory once confirmed not needed
-  > **Comments:**
+- [x] Delete `legacy/` directory once confirmed not needed
+  > **Comments:** Deleted legacy/ directory with flows/, research/, tasks/. Updated server/api.py to remove legacy imports and deprecated endpoints (/research now uses autonomous workflow, removed /agent-debug). Updated run.py to use autonomous workflow with CLI args (symbol required). Deleted legacy test directories (earnings_projections, financial_statements, flows, historical_earnings, management_guidance, tasks, trade_ideas). Kept valid tests in clients/, lib/, and test_alpha_vantage_api.py (32 tests passing).
 
-- [ ] Update CLAUDE.md with new architecture
-  > **Comments:**
+- [x] Update CLAUDE.md with new architecture
+  > **Comments:** Rewrote CLAUDE.md to document three-pillar autonomous workflow architecture, new project structure (src/agents/), model configuration (xAI Grok), API endpoints, and updated environment variables (XAI_API_KEY, ENABLE_WEB_SEARCH, ENABLE_X_SEARCH).
 
 ---
 
@@ -504,9 +504,9 @@ X_BEARER_TOKEN=your_x_bearer_token
 - [x] Phase 0.1: Model support configured
 - [x] Phase 0.2: Legacy code moved
 - [x] Phase 1: Minimal working workflow
-- [ ] Phase 2: Enhancements
-- [ ] Phase 3: API integration
+- [x] Phase 2: Enhancements (2.1 Trade Advice, 2.2 X Search, 2.3 Improved Prompts - 2.4 Caching skipped)
+- [x] Phase 3: API integration (3.1 API Endpoint, 3.2 Cleanup)
 
 ---
 
-*Last Updated: 2026-01-30 (Phase 1 complete)*
+*Last Updated: 2026-01-30 (All phases complete)*
