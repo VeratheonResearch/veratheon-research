@@ -539,33 +539,23 @@ Use XAI X Search (no additional key needed)
 
 Update backend to match what frontend expects OR update frontend to match new backend. Recommend updating frontend since it's cleaner.
 
-- [ ] Rename `POST /research/autonomous` to `POST /research` (replace legacy endpoint)
-  > **Comments:**
+- [x] Rename `POST /research/autonomous` to `POST /research` (replace legacy endpoint)
+  > **Comments:** Already named `/research` - endpoint was correctly configured in Phase 3.2 cleanup. No changes needed.
 
-- [ ] Update response structure to match frontend expectations
-  > **Comments:**
-  > Frontend expects: `{ job_id: string, message: string }`
-  > Current returns: `{ job_id: string, status: string, message: string }`
-  > Need to verify compatibility or adjust frontend.
+- [x] Update response structure to match frontend expectations
+  > **Comments:** Response returns `{ job_id, status, message }`. Extra `status` field is backwards compatible with frontend expecting `{ job_id, message }`. No changes needed.
 
-- [ ] Verify `/report-status/{symbol}` endpoint exists and works
-  > **Comments:**
-  > Should return: `{ has_report: boolean, completed_at?: string }`
-  > Check if this endpoint exists in new implementation.
+- [x] Verify `/report-status/{symbol}` endpoint exists and works
+  > **Comments:** Endpoint exists. Updated to check for new `synthesis_report` field instead of legacy `comprehensive_report.comprehensive_analysis`. Returns `{ has_report, completed_at, symbol, job_id }`.
 
-- [ ] Verify `/ticker-search?query=` endpoint exists and works
-  > **Comments:**
-  > Should return: `{ results: Array<{symbol, name, type?}> }`
-  > Check if this endpoint exists in new implementation.
+- [x] Verify `/ticker-search?query=` endpoint exists and works
+  > **Comments:** Endpoint exists and works. Uses `call_alpha_vantage_symbol_search()` to return matching symbols.
 
-- [ ] Add `/jobs/{job_id}` endpoint for job status lookup
-  > **Comments:**
-  > Frontend uses this for polling fallback.
-  > Should return full job status with result if completed.
+- [x] Add `/jobs/{job_id}` endpoint for job status lookup
+  > **Comments:** Added `GET /jobs/{job_id}` endpoint. Returns full job data: `{ job_id, symbol, status, created_at, updated_at, completed_at, failed_at, result, error, steps }`. Returns 404 if job not found.
 
-- [ ] Add `/jobs/symbol/{symbol}` endpoint for symbol-based lookup
-  > **Comments:**
-  > Frontend uses this to resume tracking by symbol.
+- [x] Add `/jobs/symbol/{symbol}` endpoint for symbol-based lookup
+  > **Comments:** Added `GET /jobs/symbol/{symbol}` endpoint. Fetches most recent job for symbol. Returns same structure as `/jobs/{job_id}`. Returns 404 if no job found for symbol.
 
 ---
 

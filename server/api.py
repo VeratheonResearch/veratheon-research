@@ -160,7 +160,7 @@ async def start_research(req: ResearchRequest, background_tasks: BackgroundTasks
 
 @app.get("/report-status/{symbol}")
 async def check_report_status(symbol: str):
-    """Check if a comprehensive report has been run for a stock today."""
+    """Check if a research report has been run for a stock today."""
     try:
         symbol_upper = symbol.upper()
         job_tracker = get_job_tracker()
@@ -177,17 +177,17 @@ async def check_report_status(symbol: str):
         if not job_data:
             return {"has_report": False, "message": f"No job data found for {symbol_upper}"}
 
-        # Check if job is completed and has a result with comprehensive_report
+        # Check if job is completed and has a result with synthesis_report (new autonomous workflow)
+        result = job_data.get("result")
         has_report = (
             job_data.get("status") == "completed" and
-            job_data.get("result") and
-            job_data.get("result", {}).get("comprehensive_report", {}).get("comprehensive_analysis")
+            result and
+            result.get("synthesis_report")
         )
 
         # Check if the report was generated today
         is_today = False
         if has_report and job_data.get("completed_at"):
-            from datetime import datetime
             completed_date = datetime.fromisoformat(job_data["completed_at"])
             today = datetime.now()
             is_today = (
@@ -200,12 +200,104 @@ async def check_report_status(symbol: str):
             "has_report": has_report and is_today,
             "completed_at": job_data.get("completed_at") if has_report else None,
             "symbol": symbol_upper,
-            "job_id": main_job_id if has_report else None  # Return main_job_id
+            "job_id": main_job_id if has_report else None
         }
 
     except Exception as e:
         logger.exception(f"Error checking report status for {symbol}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/jobs/{job_id}")
+async def get_job_status(job_id: str):
+    """Get job status by job_id.
+
+    This endpoint returns the full job status including result if completed.
+    Used by frontend for polling fallback when Realtime is unavailable.
+
+    Args:
+        job_id: The main_job_id of the research job
+
+    Returns:
+        Job data including status, result (if completed), and error (if failed)
+    """
+    try:
+        job_tracker = get_job_tracker()
+
+        # Get job status by main_job_id
+        job_data = job_tracker.get_job_status(job_id, use_main_job_id=True)
+
+        if not job_data:
+            raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+
+        return {
+            "job_id": job_data.get("main_job_id"),
+            "symbol": job_data.get("symbol"),
+            "status": job_data.get("status"),
+            "created_at": job_data.get("created_at"),
+            "updated_at": job_data.get("updated_at"),
+            "completed_at": job_data.get("completed_at"),
+            "failed_at": job_data.get("failed_at"),
+            "result": job_data.get("result"),
+            "error": job_data.get("error"),
+            "steps": job_data.get("steps", [])
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Error getting job status for {job_id}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/jobs/symbol/{symbol}")
+async def get_job_by_symbol(symbol: str):
+    """Get the most recent job for a symbol.
+
+    This endpoint allows the frontend to resume tracking a job by symbol
+    when the job_id is not available (e.g., page refresh).
+
+    Args:
+        symbol: Stock symbol to look up
+
+    Returns:
+        Most recent job data for the symbol, or 404 if not found
+    """
+    try:
+        symbol_upper = symbol.upper()
+        job_tracker = get_job_tracker()
+
+        # Get the most recent job for this symbol
+        main_job_id = job_tracker.get_job_by_symbol(symbol_upper, return_main_job_id=True)
+
+        if not main_job_id:
+            raise HTTPException(status_code=404, detail=f"No job found for symbol {symbol_upper}")
+
+        # Get full job details
+        job_data = job_tracker.get_job_status(main_job_id, use_main_job_id=True)
+
+        if not job_data:
+            raise HTTPException(status_code=404, detail=f"Job data not found for symbol {symbol_upper}")
+
+        return {
+            "job_id": job_data.get("main_job_id"),
+            "symbol": job_data.get("symbol"),
+            "status": job_data.get("status"),
+            "created_at": job_data.get("created_at"),
+            "updated_at": job_data.get("updated_at"),
+            "completed_at": job_data.get("completed_at"),
+            "failed_at": job_data.get("failed_at"),
+            "result": job_data.get("result"),
+            "error": job_data.get("error"),
+            "steps": job_data.get("steps", [])
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Error getting job by symbol {symbol}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/ticker-search")
 async def search_ticker(query: str = Query(..., description="Search query for ticker symbol or company name")):
