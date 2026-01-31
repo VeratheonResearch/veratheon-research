@@ -479,14 +479,13 @@ Add to `.env`:
 
 ```bash
 # xAI API (Primary) - Already configured
-XAI_API_KEY=your_xai_api_key
+XAI_API_KEY=your_xai_api_key (already configured)
 
 # Web Search (choose one based on Phase 1.3 research)
-TAVILY_API_KEY=your_tavily_key  # If using Tavily
-# OR use xAI Live Search (no additional key needed)
+We are using xAI Live Search (no additional key needed)
 
 # X/Twitter API (optional - evaluate in Phase 2.2)
-X_BEARER_TOKEN=your_x_bearer_token
+Use XAI X Search (no additional key needed)
 ```
 
 ---
@@ -509,4 +508,304 @@ X_BEARER_TOKEN=your_x_bearer_token
 
 ---
 
-*Last Updated: 2026-01-30 (All phases complete)*
+### Phase 4: Frontend Integration
+
+**Goal:** Update the frontend (veratheon-ui/) to work with the new autonomous workflow backend. The frontend is currently configured for a legacy implementation that no longer exists.
+
+#### Current State Analysis
+
+**Frontend expects (legacy):**
+- `POST /research` → returns `{ job_id, message }`
+- Job structure with `main_job_id` + 14 `sub_job_id` entries for progress tracking
+- Result structure: `{ comprehensive_report: { comprehensive_analysis }, key_insights: { critical_insights } }`
+- Supabase Realtime updates on `research_jobs` table
+- `/report-status/{symbol}` endpoint
+- `/ticker-search?query=` endpoint
+
+**Backend now provides:**
+- `POST /research/autonomous` → returns `{ job_id, status, message }`
+- Single job with `WorkflowResult` containing: `quantitative_report`, `qualitative_report`, `macro_report`, `synthesis_report`, `trade_advice`
+- 5 parallel agents instead of 14 sequential steps
+
+**Key gaps to address:**
+1. Endpoint path mismatch (`/research` vs `/research/autonomous`)
+2. Result structure mismatch (frontend expects `comprehensive_report`/`key_insights`)
+3. Progress tracking (frontend expects 14 sub-jobs, backend has 5 agents)
+4. Job metadata structure differences
+
+---
+
+#### 4.1 Backend API Compatibility Layer
+
+Update backend to match what frontend expects OR update frontend to match new backend. Recommend updating frontend since it's cleaner.
+
+- [ ] Rename `POST /research/autonomous` to `POST /research` (replace legacy endpoint)
+  > **Comments:**
+
+- [ ] Update response structure to match frontend expectations
+  > **Comments:**
+  > Frontend expects: `{ job_id: string, message: string }`
+  > Current returns: `{ job_id: string, status: string, message: string }`
+  > Need to verify compatibility or adjust frontend.
+
+- [ ] Verify `/report-status/{symbol}` endpoint exists and works
+  > **Comments:**
+  > Should return: `{ has_report: boolean, completed_at?: string }`
+  > Check if this endpoint exists in new implementation.
+
+- [ ] Verify `/ticker-search?query=` endpoint exists and works
+  > **Comments:**
+  > Should return: `{ results: Array<{symbol, name, type?}> }`
+  > Check if this endpoint exists in new implementation.
+
+- [ ] Add `/jobs/{job_id}` endpoint for job status lookup
+  > **Comments:**
+  > Frontend uses this for polling fallback.
+  > Should return full job status with result if completed.
+
+- [ ] Add `/jobs/symbol/{symbol}` endpoint for symbol-based lookup
+  > **Comments:**
+  > Frontend uses this to resume tracking by symbol.
+
+---
+
+#### 4.2 Result Structure Alignment
+
+Update frontend to use the new `WorkflowResult` structure. Remove all legacy type definitions.
+
+**New structure from backend:**
+```typescript
+interface WorkflowResult {
+  symbol: string;
+  quantitative_report: string;
+  qualitative_report: string;
+  macro_report: MacroReport;
+  synthesis_report: string;
+  trade_advice: string;
+}
+```
+
+- [ ] Remove legacy types from `/src/lib/research-types.ts`
+  > **Comments:**
+  > Delete:
+  > - `ComprehensiveReport` interface
+  > - `KeyInsights` interface
+  > - Legacy `ResearchResult` interface
+
+- [ ] Add new `WorkflowResult` type to `/src/lib/research-types.ts`
+  > **Comments:**
+  > Replace with new structure matching backend output.
+
+- [ ] Update all imports/usages of legacy types across frontend
+  > **Comments:**
+  > Search for `ComprehensiveReport`, `KeyInsights`, `ResearchResult` and update.
+
+---
+
+#### 4.3 Progress Tracking & Sub-Jobs
+
+Frontend expects 14 sub-jobs with status tracking. New workflow has 5 agents running in parallel.
+
+**New sub-job structure (5 agents):**
+1. `quantitative_agent` - Financial analysis (Alpha Vantage)
+2. `qualitative_agent` - News/sentiment (xAI search)
+3. `macro_report` - Economic indicators (no LLM)
+4. `synthesis_agent` - Combines all reports
+5. `trade_advice_agent` - Trade recommendations
+
+- [ ] Update `JobTracker` to create sub-jobs for each agent
+  > **Comments:**
+  > Currently only tracks main flow. Need to emit sub-job entries for:
+  > - quantitative_agent (running → completed)
+  > - qualitative_agent (running → completed)
+  > - macro_report (running → completed)
+  > - synthesis_agent (running → completed)
+  > - trade_advice_agent (running → completed)
+
+- [ ] Update workflow to emit progress events
+  > **Comments:**
+  > In `src/agents/workflow.py`, add job tracker calls before/after each agent.
+
+- [ ] Update frontend `TOTAL_RESEARCH_STEPS` constant from 14 to 5
+  > **Comments:**
+  > Located in `/src/routes/+page.svelte`
+
+- [ ] Update `ResearchFlowsSection.svelte` to display new agent names
+  > **Comments:**
+  > Component displays sub-job list with status badges.
+  > Update to show: Quantitative, Qualitative, Macro, Synthesis, Trade Advice
+
+---
+
+#### 4.4 Frontend Component Updates
+
+Rewrite UI components to display new `WorkflowResult` structure. Remove all legacy display logic.
+
+- [ ] Rewrite `ResearchReportDisplay.svelte` for new structure
+  > **Comments:**
+  > Display sections:
+  > - `result.synthesis_report` - Main synthesis (prominent)
+  > - `result.quantitative_report` - Financial analysis
+  > - `result.qualitative_report` - News/sentiment
+  > - `result.macro_report` - Economic context (formatted from MacroReport)
+  > - `result.trade_advice` - Trade ideas (with disclaimer styling)
+
+- [ ] Create tabbed or accordion layout for report sections
+  > **Comments:**
+  > Consider: Synthesis as main view, other sections in tabs/accordion.
+  > Or: All sections visible with clear headers.
+
+- [ ] Add trade advice disclaimer styling
+  > **Comments:**
+  > Backend includes disclaimer text. Add visual warning styling (yellow/orange border, icon).
+
+- [ ] Update `+page.svelte` for new data flow
+  > **Comments:**
+  > - Change `researchResult` type from legacy to `WorkflowResult`
+  > - Update progress calculation to use 5 steps
+  > - Remove any legacy field references
+
+- [ ] Remove legacy component code
+  > **Comments:**
+  > Delete any code referencing `comprehensive_report`, `key_insights`, etc.
+
+---
+
+#### 4.5 API Client Updates (veratheon-ui)
+
+Update SvelteKit API routes and client functions.
+
+- [ ] Update `/src/lib/api/research.ts` - `startResearch()` function
+  > **Comments:**
+  > May need to update request/response handling for new structure.
+
+- [ ] Update `/src/routes/api/research/start/+server.ts` proxy endpoint
+  > **Comments:**
+  > Verify it correctly proxies to new `/research` endpoint.
+
+- [ ] Update `/src/routes/api/research/status/[symbol]/+server.ts`
+  > **Comments:**
+  > Verify job status fetching works with new structure.
+
+- [ ] Update `/src/routes/api/research/report-status/[symbol]/+server.ts`
+  > **Comments:**
+  > Verify cached report checking works.
+
+- [ ] Update `/src/lib/composables/useRealtimeResearch.ts`
+  > **Comments:**
+  > Verify Supabase Realtime subscription works with new job structure.
+  > May need to update how sub-jobs are parsed from Realtime events.
+
+---
+
+#### 4.6 Type Definitions (veratheon-ui)
+
+Replace all legacy types with new data structures. No backwards compatibility.
+
+- [ ] Rewrite `/src/lib/research-types.ts` completely
+  > **Comments:**
+  > New types required:
+  > ```typescript
+  > interface WorkflowResult {
+  >   symbol: string;
+  >   quantitative_report: string;
+  >   qualitative_report: string;
+  >   macro_report: MacroReport;
+  >   synthesis_report: string;
+  >   trade_advice: string;
+  > }
+  >
+  > interface MacroReport {
+  >   indicators: MacroIndicator[];
+  >   sector_etf?: SectorETF;
+  >   report_date: string;
+  > }
+  >
+  > interface MacroIndicator {
+  >   name: string;
+  >   value: string;
+  >   trend?: string;
+  >   context?: string;
+  > }
+  >
+  > interface SectorETF {
+  >   symbol: string;
+  >   name: string;
+  >   price?: number;
+  >   change_percent?: number;
+  > }
+  > ```
+
+- [ ] Update `SubJob` interface for new agent names
+  > **Comments:**
+  > Names: quantitative_agent, qualitative_agent, macro_report, synthesis_agent, trade_advice_agent
+
+- [ ] Update `JobStatus` interface - result is now `WorkflowResult`
+  > **Comments:**
+  > `metadata.result` is `WorkflowResult`, not legacy structure.
+
+- [ ] Remove any unused legacy type exports
+  > **Comments:**
+  > Clean sweep - delete anything not used by new implementation.
+
+---
+
+#### 4.7 Testing & Verification
+
+- [ ] Test end-to-end flow: Start research → Track progress → Display results
+  > **Comments:**
+
+- [ ] Test Supabase Realtime updates work correctly
+  > **Comments:**
+
+- [ ] Test polling fallback works if Realtime fails
+  > **Comments:**
+
+- [ ] Test cached report detection (`/report-status/{symbol}`)
+  > **Comments:**
+
+- [ ] Test ticker search functionality
+  > **Comments:**
+
+- [ ] Verify mobile responsiveness of updated components
+  > **Comments:**
+
+---
+
+#### 4.8 Documentation Updates
+
+- [ ] Update veratheon-ui CLAUDE.md with new API contract
+  > **Comments:**
+
+- [ ] Update any relevant comments in frontend code
+  > **Comments:**
+
+---
+
+## Implementation Order Recommendation
+
+For Phase 4, recommended implementation order:
+
+1. **4.1 Backend API Compatibility** - Fix endpoints first
+2. **4.2 Result Structure** - Decide and implement transformation approach
+3. **4.6 Type Definitions** - Update types before components
+4. **4.3 Progress Tracking** - Enable sub-job tracking in backend
+5. **4.5 API Client Updates** - Update frontend API layer
+6. **4.4 Frontend Components** - Update UI components
+7. **4.7 Testing** - Verify everything works
+8. **4.8 Documentation** - Update docs
+
+---
+
+## Completion Checklist
+
+- [x] Phase 0.1: Model support configured
+- [x] Phase 0.2: Legacy code moved
+- [x] Phase 1: Minimal working workflow
+- [x] Phase 2: Enhancements (2.1 Trade Advice, 2.2 X Search, 2.3 Improved Prompts - 2.4 Caching skipped)
+- [x] Phase 3: API integration (3.1 API Endpoint, 3.2 Cleanup)
+- [ ] Phase 4: Frontend integration (4.1-4.8)
+
+---
+
+*Last Updated: 2026-01-30 (Phase 4 frontend integration added)*
