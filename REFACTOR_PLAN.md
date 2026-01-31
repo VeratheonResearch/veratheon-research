@@ -407,13 +407,24 @@ Start with quantitative since we have Alpha Vantage data already working.
 - [x] Include trade advice as advisory only and not a recommendation.
   > **Comments:** Added prominent disclaimers at multiple levels: (1) agent instructions emphasize "ADVISORY ONLY" and "NOT a financial recommendation", (2) output is prepended with warning notice box, (3) final disclaimer at end of output, (4) format_workflow_result displays section as "TRADE IDEAS (ADVISORY ONLY)".
 
-#### 2.2 Add X/Twitter Search (if valuable)
+#### 2.2 Add X/Twitter Search (COMPLETED)
 
-- [ ] Evaluate if X search adds value
-  > **Comments:**
+- [x] Evaluate if X search adds value
+  > **Comments:** X search adds significant value. Testing showed unique contributions including:
+  > - Real-time market sentiment and reactions (e.g., post-earnings buzz)
+  > - Influencer/analyst commentary with engagement metrics (likes, retweets)
+  > - Breaking news often ahead of traditional media (CEO comments, supply constraints)
+  > - Social proof signals from financial X accounts (@NewsFromWSB, @zerohedge, @DeItaone)
+  > - Notable Social/X Posts section with specific tweet citations and links
+  > - Example: Tim Cook's "supply chase mode" quote surfaced via X before news articles
 
-- [ ] Implement if worthwhile
-  > **Comments:**
+- [x] Implement if worthwhile
+  > **Comments:** X search was already integrated in Phase 1.3. Enhanced with:
+  > - Added separate `ENABLE_X_SEARCH` toggle for independent control
+  > - Defaults to follow `ENABLE_WEB_SEARCH` for backwards compatibility
+  > - Users can now enable: web only, X only, both, or neither
+  > - Updated prompts to adjust based on enabled search types
+  > - Updated .env.example with new variable documentation
 
 #### 2.3 Improve Prompts
 

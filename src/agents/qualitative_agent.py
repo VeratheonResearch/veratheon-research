@@ -9,11 +9,29 @@ import os
 from typing import Optional
 from openai import OpenAI
 
-# Environment toggle for web search (expensive operation)
+# Environment toggles for search capabilities
+# Both are expensive API operations - control separately if needed
+#
+# ENABLE_WEB_SEARCH: General web search for news, articles, press releases
 # Set ENABLE_WEB_SEARCH=True in .env to enable (accepts: True, true, 1)
 # Default: True (enabled)
 _web_search_env = os.getenv("ENABLE_WEB_SEARCH", "True")
 ENABLE_WEB_SEARCH = _web_search_env in ("True", "true", "1")
+
+# ENABLE_X_SEARCH: X/Twitter search for real-time sentiment, influencer takes, breaking news
+# Provides unique value through:
+# - Real-time market sentiment and reactions
+# - Influencer/analyst commentary with engagement metrics
+# - Breaking news often ahead of traditional media
+# - Social proof signals (likes, retweets)
+# Set ENABLE_X_SEARCH=True in .env to enable (accepts: True, true, 1)
+# Default: True (enabled) - follows ENABLE_WEB_SEARCH if not explicitly set
+_x_search_env = os.getenv("ENABLE_X_SEARCH")
+if _x_search_env is not None:
+    ENABLE_X_SEARCH = _x_search_env in ("True", "true", "1")
+else:
+    # Default: follow web search setting for backwards compatibility
+    ENABLE_X_SEARCH = ENABLE_WEB_SEARCH
 
 # xAI API configuration
 XAI_API_KEY = os.getenv("XAI_API_KEY")
@@ -103,8 +121,8 @@ async def run_qualitative_analysis(symbol: str) -> str:
     Returns:
         Markdown-formatted qualitative analysis report
     """
-    # Check if web search is disabled
-    if not ENABLE_WEB_SEARCH:
+    # Check if all search capabilities are disabled
+    if not ENABLE_WEB_SEARCH and not ENABLE_X_SEARCH:
         return _get_disabled_message(symbol)
 
     if not XAI_API_KEY:
@@ -112,29 +130,46 @@ async def run_qualitative_analysis(symbol: str) -> str:
 
     client = get_xai_client()
 
-    # Build the research query
+    # Build the research query based on enabled search types
+    focus_items = ["Recent news and developments (last 30 days)"]
+    if ENABLE_X_SEARCH:
+        focus_items.append("What people are saying on X/Twitter about the company")
+    focus_items.extend([
+        "Upcoming earnings or events",
+        "Any concerns or risks being discussed",
+        "Management commentary or guidance",
+    ])
+
+    focus_list = "\n".join(f"{i+1}. {item}" for i, item in enumerate(focus_items))
+
     user_query = f"""Research what's happening with {symbol} (the company, not just the stock).
 
 Focus on:
-1. Recent news and developments (last 30 days)
-2. What people are saying on X/Twitter about the company
-3. Upcoming earnings or events
-4. Any concerns or risks being discussed
-5. Management commentary or guidance
+{focus_list}
 
 Provide a comprehensive qualitative analysis."""
 
-    # Configure xAI server-side tools
-    tools = [
-        {"type": "web_search"},
-        {"type": "x_search"},
-    ]
+    # Configure xAI server-side tools based on enabled capabilities
+    tools = []
+    if ENABLE_WEB_SEARCH:
+        tools.append({"type": "web_search"})
+    if ENABLE_X_SEARCH:
+        tools.append({"type": "x_search"})
+
+    # Adjust instructions based on available tools
+    instructions = QUALITATIVE_AGENT_INSTRUCTIONS
+    if not ENABLE_X_SEARCH:
+        # Remove X/Twitter references from output format
+        instructions = instructions.replace(
+            "6. **Notable Social/X Posts** - Relevant insights from X (if found)",
+            "6. **Additional Context** - Any other relevant insights"
+        )
 
     try:
         # Call xAI responses API with search tools
         response = client.responses.create(
             model="grok-4-1-fast",
-            instructions=QUALITATIVE_AGENT_INSTRUCTIONS,
+            instructions=instructions,
             input=[{"role": "user", "content": user_query}],
             tools=tools,
         )
@@ -144,6 +179,12 @@ Provide a comprehensive qualitative analysis."""
 
         if not output_text:
             return f"[Qualitative analysis for {symbol} - no results returned]"
+
+        # Add note about disabled search if applicable
+        if not ENABLE_WEB_SEARCH:
+            output_text = f"*Note: Web search disabled - analysis based on X/Twitter data only*\n\n{output_text}"
+        elif not ENABLE_X_SEARCH:
+            output_text = f"*Note: X search disabled - analysis based on web sources only*\n\n{output_text}"
 
         return output_text
 
@@ -194,15 +235,21 @@ def _extract_response_text(response) -> str:
 
 
 def _get_disabled_message(symbol: str) -> str:
-    """Return a message when web search is disabled."""
+    """Return a message when all search capabilities are disabled."""
     return f"""## Qualitative Analysis for {symbol}
 
-**Web search is currently disabled.**
+**All search capabilities are currently disabled.**
 
-To enable web search, set in your `.env` file:
+To enable search, set in your `.env` file:
 ```
-ENABLE_WEB_SEARCH=True
+ENABLE_WEB_SEARCH=True   # Web search for news, articles, press releases
+ENABLE_X_SEARCH=True     # X/Twitter search for real-time sentiment
 ```
 
-Note: Web search uses xAI's server-side tools which incur additional API costs.
+You can enable them independently based on your needs:
+- **Web search only**: Set `ENABLE_WEB_SEARCH=True` (good for traditional news sources)
+- **X search only**: Set `ENABLE_X_SEARCH=True` (good for real-time sentiment, faster/cheaper)
+- **Both enabled**: Set both to `True` (comprehensive analysis - recommended)
+
+Note: Search uses xAI's server-side tools which incur additional API costs.
 """
